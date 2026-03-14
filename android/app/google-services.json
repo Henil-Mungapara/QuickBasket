@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "744055192075",
+    "project_id": "quickbasket-87f7c",
+    "storage_bucket": "quickbasket-87f7c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:744055192075:android:b389c7d9f6d1b40261a50e",
+        "android_client_info": {
+          "package_name": "com.example.quickbasket"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9r8X5D7FCyeTQ1UmLeVEy5BNJvpokwd0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
