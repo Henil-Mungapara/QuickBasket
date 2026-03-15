@@ -1,4 +1,6 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:quickbasket/firebase_options.dart';
 import 'constants/app_colors.dart';
 
 // ── Auth Screens ─────────────────────────────────────────────────────
@@ -42,9 +44,11 @@ import 'screens/delivery/delivery_profile_screen.dart';
 ///   6. Add pdf & printing packages for InvoiceScreen
 /// ─────────────────────────────────────────────────────────────────────
 
-void main() {
-  // TODO: Add WidgetsFlutterBinding.ensureInitialized();
-  // TODO: await Firebase.initializeApp();
+void main()async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const QuickBasketApp());
 }
 

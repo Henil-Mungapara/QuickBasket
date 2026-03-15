@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../constants/app_colors.dart';
 import '../../helpers/ui_helper.dart';
 import '../../models/order_model.dart';
@@ -14,9 +15,31 @@ class ManageOrdersScreen extends StatefulWidget {
 
 class _ManageOrdersScreenState extends State<ManageOrdersScreen> {
   final List<OrderModel> _orders = List.from(OrderModel.dummyOrders);
-  final _deliveryPersons =
-      UserModel.dummyUsers.where((u) => u.role == 'delivery').toList();
+  List<UserModel> _deliveryPersons = [];
   final _statuses = ['Pending', 'Accepted', 'Out for Delivery', 'Delivered'];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDeliveryPersons();
+  }
+
+  // Load delivery persons from Firestore
+  Future<void> _loadDeliveryPersons() async {
+    try {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('role', isEqualTo: 'delivery_person')
+          .get();
+
+      setState(() {
+        _deliveryPersons = snapshot.docs.map((doc) {
+          return UserModel.fromJson(
+              doc.id, doc.data() as Map<String, dynamic>);
+        }).toList();
+      });
+    } catch (_) {}
+  }
 
   Color _statusColor(String status) {
     switch (status) {

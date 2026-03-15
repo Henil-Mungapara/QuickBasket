@@ -55,7 +55,7 @@ class UIHelper {
   // ── Custom Elevated Button ───────────────────────────────────────
   static Widget customButton({
     required String text,
-    required VoidCallback onPressed,
+    required VoidCallback? onPressed,
     Color backgroundColor = AppColors.primary,
     double? width,
     double height = 52,
@@ -89,7 +89,7 @@ class UIHelper {
   // ── Custom Text Button ───────────────────────────────────────────
   static Widget customTextButton({
     required String text,
-    required VoidCallback onPressed,
+    required VoidCallback? onPressed,
     Color color = AppColors.primary,
     double fontSize = 14,
   }) {

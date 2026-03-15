@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../constants/app_colors.dart';
 import '../../helpers/app_size.dart';
 import '../../helpers/ui_helper.dart';
@@ -17,6 +19,7 @@ class _LoginScreenState extends State<LoginScreen>
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _obscurePassword = true;
+  bool _isLoading = false;
 
   late AnimationController _animController;
   late Animation<double> _fadeAnimation;
@@ -38,15 +41,69 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
-  void _handleLogin() {
+  Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // TODO: Replace with Firebase Authentication
-    // FirebaseAuth.instance.signInWithEmailAndPassword(...)
-    // Then fetch user role from Firestore and navigate accordingly.
+    setState(() => _isLoading = true);
 
-    UIHelper.showSnackBar(context, 'Logging in...');
-    Navigator.pushReplacementNamed(context, '/customer-home');
+    try {
+      // 1. Authenticate with Firebase Auth
+      UserCredential userCred = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      // 2. Fetch User Data from Firestore to check Role
+      String uid = userCred.user!.uid;
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
+
+      if (!userDoc.exists) {
+        if (mounted) {
+          UIHelper.showSnackBar(context, 'User data not found.', isError: true);
+        }
+        await FirebaseAuth.instance.signOut();
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      // 3. Determine Role and Navigate
+      String role = userDoc.get('role') ?? 'customer';
+
+      if (mounted) {
+        if (role == 'admin') {
+          UIHelper.showSnackBar(context, 'Welcome Admin!');
+          Navigator.pushReplacementNamed(context, '/admin-dashboard');
+        } else if (role == 'delivery_person') {
+          UIHelper.showSnackBar(context, 'Welcome Delivery Partner!');
+          Navigator.pushReplacementNamed(context, '/delivery-dashboard');
+        } else {
+          UIHelper.showSnackBar(context, 'Login Successful!');
+          Navigator.pushReplacementNamed(context, '/customer-home');
+        }
+      }
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        String message = 'Authentication failed.';
+        if (e.code == 'user-not-found') {
+          message = 'No user found for that email.';
+        } else if (e.code == 'wrong-password') {
+          message = 'Wrong password provided.';
+        } else if (e.code == 'invalid-credential') {
+          message = 'Invalid email or password.';
+        }
+        UIHelper.showSnackBar(context, message, isError: true);
+      }
+    } catch (e) {
+      if (mounted) {
+        UIHelper.showSnackBar(context, 'Error: $e', isError: true);
+      }
+    }
+
+    if (mounted) setState(() => _isLoading = false);
   }
 
   void _handleGoogleSignIn() {
@@ -144,8 +201,8 @@ class _LoginScreenState extends State<LoginScreen>
 
                     // ── Login Button ──────────────────────────
                     UIHelper.customButton(
-                      text: 'Login',
-                      onPressed: _handleLogin,
+                      text: _isLoading ? 'Logging in...' : 'Login',
+                      onPressed: _isLoading ? null : _handleLogin,
                       width: AppSize.screenWidth(context),
                     ),
                     const SizedBox(height: 16),
