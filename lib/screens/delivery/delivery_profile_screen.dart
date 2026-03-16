@@ -2,25 +2,30 @@ import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../helpers/ui_helper.dart';
 
-/// Delivery Profile Screen — premium design with gradient header & menu sections.
+/// Delivery Profile Screen — responsive design, no settings section.
 class DeliveryProfileScreen extends StatelessWidget {
   const DeliveryProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Fetch delivery person data from Firebase Firestore
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isWide = screenWidth > 600;
+    final horizontalPad = isWide ? screenWidth * 0.1 : 20.0;
+    final avatarRadius = isWide ? 56.0 : 48.0;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SingleChildScrollView(
         child: Column(
           children: [
             // ── Gradient Header with Avatar ──────────────────
-            _buildProfileHeader(context),
-            const SizedBox(height: 24),
+            _buildProfileHeader(context, avatarRadius),
+            // Spacing for the floating avatar + name + rating
+            SizedBox(height: avatarRadius + 68),
 
             // ── Stats Row ────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: horizontalPad),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -31,14 +36,17 @@ class DeliveryProfileScreen extends StatelessWidget {
                   _sectionTitle('Personal Information'),
                   const SizedBox(height: 12),
                   _infoCard([
-                    _infoRow(Icons.person_outline, 'Full Name', 'Ravi Kumar'),
+                    _infoRow(
+                        Icons.person_outline, 'Full Name', 'Ravi Kumar'),
                     _divider(),
-                    _infoRow(Icons.email_outlined, 'Email', 'ravi@email.com'),
+                    _infoRow(
+                        Icons.email_outlined, 'Email', 'ravi@email.com'),
                     _divider(),
                     _infoRow(
                         Icons.phone_outlined, 'Phone', '+91 98765 43212'),
                     _divider(),
-                    _infoRow(Icons.two_wheeler_outlined, 'Vehicle', 'Bike — MH 01 AB 1234'),
+                    _infoRow(Icons.two_wheeler_outlined, 'Vehicle',
+                        'Bike — MH 01 AB 1234'),
                   ]),
 
                   const SizedBox(height: 24),
@@ -47,30 +55,16 @@ class DeliveryProfileScreen extends StatelessWidget {
                   _sectionTitle('Quick Actions'),
                   const SizedBox(height: 12),
                   _infoCard([
-                    _menuTile(Icons.assignment_outlined, 'Assigned Orders',
+                    _menuTile(
+                        Icons.assignment_outlined, 'Assigned Orders',
                         onTap: () => Navigator.pushNamed(
                             context, '/delivery-assigned-orders')),
                     _divider(),
                     _menuTile(Icons.history, 'Delivery History',
                         onTap: () {}),
                     _divider(),
-                    _menuTile(Icons.account_balance_wallet_outlined, 'Earnings',
-                        onTap: () {}),
-                  ]),
-
-                  const SizedBox(height: 24),
-
-                  // ── Settings Section ─────────────────────────
-                  _sectionTitle('Settings'),
-                  const SizedBox(height: 12),
-                  _infoCard([
-                    _menuTile(Icons.notifications_outlined, 'Notifications',
-                        onTap: () {}),
-                    _divider(),
-                    _menuTile(Icons.lock_outline, 'Change Password',
-                        onTap: () {}),
-                    _divider(),
-                    _menuTile(Icons.help_outline, 'Help & Support',
+                    _menuTile(
+                        Icons.account_balance_wallet_outlined, 'Earnings',
                         onTap: () {}),
                   ]),
 
@@ -81,7 +75,7 @@ class DeliveryProfileScreen extends StatelessWidget {
                     width: double.infinity,
                     child: UIHelper.customButton(
                       text: 'Logout',
-                      backgroundColor: AppColors.error,
+                      backgroundColor: AppColors.primary,
                       onPressed: () {
                         // TODO: Firebase sign out
                         Navigator.pushReplacementNamed(context, '/login');
@@ -99,7 +93,7 @@ class DeliveryProfileScreen extends StatelessWidget {
   }
 
   // ── Gradient Header ────────────────────────────────────────────────
-  Widget _buildProfileHeader(BuildContext context) {
+  Widget _buildProfileHeader(BuildContext context, double avatarRadius) {
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -134,18 +128,14 @@ class DeliveryProfileScreen extends StatelessWidget {
                           fontSize: 20,
                           fontWeight: FontWeight.w600)),
                   const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.edit_outlined,
-                        color: Colors.white, size: 22),
-                    onPressed: () {},
-                  ),
+                  const SizedBox(width: 48), // Balance the back button
                 ],
               ),
             ),
           ),
         ),
         Positioned(
-          bottom: -50,
+          bottom: -avatarRadius,
           left: 0,
           right: 0,
           child: Center(
@@ -162,17 +152,17 @@ class DeliveryProfileScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              child: const CircleAvatar(
-                radius: 48,
+              child: CircleAvatar(
+                radius: avatarRadius,
                 backgroundColor: AppColors.primary,
                 child: Icon(Icons.delivery_dining,
-                    size: 48, color: Colors.white),
+                    size: avatarRadius, color: Colors.white),
               ),
             ),
           ),
         ),
         Positioned(
-          bottom: -105,
+          bottom: -(avatarRadius + 62),
           left: 0,
           right: 0,
           child: Column(
@@ -186,7 +176,7 @@ class DeliveryProfileScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.star_rounded,
+                  const Icon(Icons.star_rounded,
                       color: AppColors.accent, size: 18),
                   const SizedBox(width: 4),
                   const Text('4.5',
@@ -205,7 +195,6 @@ class DeliveryProfileScreen extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 120),
       ],
     );
   }
@@ -217,7 +206,8 @@ class DeliveryProfileScreen extends StatelessWidget {
         _statCard('128', 'Delivered', Icons.check_circle_outline,
             AppColors.success),
         const SizedBox(width: 12),
-        _statCard('3', 'Active', Icons.pending_outlined, AppColors.warning),
+        _statCard(
+            '3', 'Active', Icons.pending_outlined, AppColors.warning),
         const SizedBox(width: 12),
         _statCard('4.5', 'Rating', Icons.star_outline, AppColors.accent),
       ],

@@ -77,7 +77,7 @@ class QuickBasketApp extends StatelessWidget {
       ),
 
       // ── Start Route ────────────────────────────────────────
-      initialRoute: '/login',
+      initialRoute: '/delivery-dashboard',
 
       // ── Named Routes ───────────────────────────────────────
       routes: {

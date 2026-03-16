@@ -2,25 +2,30 @@ import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../helpers/ui_helper.dart';
 
-/// Customer Profile Screen — premium design with gradient header & menu sections.
+/// Customer Profile Screen — responsive design, no settings section.
 class CustomerProfileScreen extends StatelessWidget {
   const CustomerProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Fetch customer data from Firebase Firestore
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isWide = screenWidth > 600;
+    final horizontalPad = isWide ? screenWidth * 0.1 : 20.0;
+    final avatarRadius = isWide ? 56.0 : 48.0;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SingleChildScrollView(
         child: Column(
           children: [
             // ── Gradient Header with Avatar ──────────────────
-            _buildProfileHeader(context),
-            const SizedBox(height: 24),
+            _buildProfileHeader(context, avatarRadius),
+            // Spacing for the floating avatar + name
+            SizedBox(height: avatarRadius + 64),
 
             // ── Personal Info Section ────────────────────────
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: horizontalPad),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -29,9 +34,11 @@ class CustomerProfileScreen extends StatelessWidget {
                   _infoCard([
                     _infoRow(Icons.person_outline, 'Full Name', 'John Doe'),
                     _divider(),
-                    _infoRow(Icons.email_outlined, 'Email', 'john@email.com'),
+                    _infoRow(
+                        Icons.email_outlined, 'Email', 'john@email.com'),
                     _divider(),
-                    _infoRow(Icons.phone_outlined, 'Phone', '+91 98765 43210'),
+                    _infoRow(
+                        Icons.phone_outlined, 'Phone', '+91 98765 43210'),
                     _divider(),
                     _infoRow(Icons.location_on_outlined, 'Address',
                         '123 Main St, City, State'),
@@ -44,34 +51,18 @@ class CustomerProfileScreen extends StatelessWidget {
                   const SizedBox(height: 12),
                   _infoCard([
                     _menuTile(Icons.shopping_bag_outlined, 'My Orders',
-                        onTap: () => Navigator.pushNamed(context, '/customer-orders')),
+                        onTap: () => Navigator.pushNamed(
+                            context, '/customer-orders')),
                     _divider(),
                     _menuTile(Icons.favorite_border, 'Wishlist',
-                        onTap: () => Navigator.pushNamed(context, '/customer-wishlist')),
+                        onTap: () => Navigator.pushNamed(
+                            context, '/customer-wishlist')),
                     _divider(),
-                    _menuTile(Icons.location_on_outlined, 'Saved Addresses',
+                    _menuTile(
+                        Icons.location_on_outlined, 'Saved Addresses',
                         onTap: () {}),
                     _divider(),
                     _menuTile(Icons.payment_outlined, 'Payment Methods',
-                        onTap: () {}),
-                  ]),
-
-                  const SizedBox(height: 24),
-
-                  // ── Settings Section ─────────────────────────
-                  _sectionTitle('Settings'),
-                  const SizedBox(height: 12),
-                  _infoCard([
-                    _menuTile(Icons.notifications_outlined, 'Notifications',
-                        onTap: () {}),
-                    _divider(),
-                    _menuTile(Icons.lock_outline, 'Change Password',
-                        onTap: () {}),
-                    _divider(),
-                    _menuTile(Icons.help_outline, 'Help & Support',
-                        onTap: () {}),
-                    _divider(),
-                    _menuTile(Icons.info_outline, 'About',
                         onTap: () {}),
                   ]),
 
@@ -82,7 +73,7 @@ class CustomerProfileScreen extends StatelessWidget {
                     width: double.infinity,
                     child: UIHelper.customButton(
                       text: 'Logout',
-                      backgroundColor: AppColors.error,
+                      backgroundColor: AppColors.primary,
                       onPressed: () {
                         // TODO: Firebase sign out
                         Navigator.pushReplacementNamed(context, '/login');
@@ -100,7 +91,7 @@ class CustomerProfileScreen extends StatelessWidget {
   }
 
   // ── Gradient Header ────────────────────────────────────────────────
-  Widget _buildProfileHeader(BuildContext context) {
+  Widget _buildProfileHeader(BuildContext context, double avatarRadius) {
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -136,21 +127,15 @@ class CustomerProfileScreen extends StatelessWidget {
                           fontSize: 20,
                           fontWeight: FontWeight.w600)),
                   const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.edit_outlined,
-                        color: Colors.white, size: 22),
-                    onPressed: () {
-                      // TODO: Navigate to edit profile
-                    },
-                  ),
+                  const SizedBox(width: 48), // Balance the back button
                 ],
               ),
             ),
           ),
         ),
-        // Floating avatar card
+        // Floating avatar
         Positioned(
-          bottom: -50,
+          bottom: -avatarRadius,
           left: 0,
           right: 0,
           child: Center(
@@ -167,17 +152,18 @@ class CustomerProfileScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              child: const CircleAvatar(
-                radius: 48,
+              child: CircleAvatar(
+                radius: avatarRadius,
                 backgroundColor: AppColors.primary,
-                child: Icon(Icons.person, size: 48, color: Colors.white),
+                child:
+                    Icon(Icons.person, size: avatarRadius, color: Colors.white),
               ),
             ),
           ),
         ),
         // Name & email below avatar
         Positioned(
-          bottom: -105,
+          bottom: -(avatarRadius + 58),
           left: 0,
           right: 0,
           child: Column(
@@ -195,8 +181,6 @@ class CustomerProfileScreen extends StatelessWidget {
             ],
           ),
         ),
-        // Spacer for the overlapping content
-        const SizedBox(height: 120),
       ],
     );
   }
@@ -267,7 +251,8 @@ class CustomerProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _menuTile(IconData icon, String title, {required VoidCallback onTap}) {
+  Widget _menuTile(IconData icon, String title,
+      {required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
