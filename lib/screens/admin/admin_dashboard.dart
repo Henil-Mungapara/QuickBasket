@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
+import '../auth/login_screen.dart';
+import 'admin_profile_screen.dart';
+import 'manage_categories_screen.dart';
+import 'manage_products_screen.dart';
+import 'manage_orders_screen.dart';
+import 'manage_delivery_persons_screen.dart';
+
 /// Admin Dashboard — overview cards and navigation to admin sub-screens.
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
@@ -56,13 +63,17 @@ class AdminDashboard extends StatelessWidget {
       actions: [
         IconButton(
           icon: const Icon(Icons.person_outline, color: Colors.white),
-          onPressed: () =>
-              Navigator.pushNamed(context, '/admin-profile'),
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AdminProfileScreen()),
+          ),
         ),
         IconButton(
           icon: const Icon(Icons.logout, color: Colors.white),
-          onPressed: () =>
-              Navigator.pushReplacementNamed(context, '/login'),
+          onPressed: () => Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+          ),
         ),
       ],
     );
@@ -153,10 +164,10 @@ class AdminDashboard extends StatelessWidget {
 
   Widget _buildQuickActions(BuildContext context) {
     final actions = [
-      {'title': 'Categories', 'icon': Icons.category_rounded, 'route': '/admin-categories'},
-      {'title': 'Products', 'icon': Icons.inventory_2_rounded, 'route': '/admin-products'},
-      {'title': 'Orders', 'icon': Icons.receipt_long_rounded, 'route': '/admin-orders'},
-      {'title': 'Delivery', 'icon': Icons.delivery_dining_rounded, 'route': '/admin-delivery-persons'},
+      {'title': 'Categories', 'icon': Icons.category_rounded, 'screen': const ManageCategoriesScreen()},
+      {'title': 'Products', 'icon': Icons.inventory_2_rounded, 'screen': const ManageProductsScreen()},
+      {'title': 'Orders', 'icon': Icons.receipt_long_rounded, 'screen': const ManageOrdersScreen()},
+      {'title': 'Delivery', 'icon': Icons.delivery_dining_rounded, 'screen': const ManageDeliveryPersonsScreen()},
     ];
 
     return GridView.builder(
@@ -172,7 +183,10 @@ class AdminDashboard extends StatelessWidget {
       itemBuilder: (ctx, i) {
         final a = actions[i];
         return GestureDetector(
-          onTap: () => Navigator.pushNamed(context, a['route'] as String),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => a['screen'] as Widget),
+          ),
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white,

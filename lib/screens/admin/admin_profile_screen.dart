@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../helpers/ui_helper.dart';
+import '../auth/login_screen.dart';
+import 'manage_categories_screen.dart';
+import 'manage_products_screen.dart';
+import 'manage_delivery_persons_screen.dart';
+import 'manage_orders_screen.dart';
 
 /// Admin Profile Screen — responsive design, no settings section.
 class AdminProfileScreen extends StatelessWidget {
@@ -51,21 +56,33 @@ class AdminProfileScreen extends StatelessWidget {
                   const SizedBox(height: 12),
                   _infoCard([
                     _menuTile(Icons.category_outlined, 'Manage Categories',
-                        onTap: () => Navigator.pushNamed(
-                            context, '/admin-categories')),
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) =>
+                                    const ManageCategoriesScreen()))),
                     _divider(),
                     _menuTile(Icons.inventory_2_outlined, 'Manage Products',
-                        onTap: () => Navigator.pushNamed(
-                            context, '/admin-products')),
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) =>
+                                    const ManageProductsScreen()))),
                     _divider(),
                     _menuTile(Icons.delivery_dining_outlined,
                         'Manage Delivery Persons',
-                        onTap: () => Navigator.pushNamed(
-                            context, '/admin-delivery-persons')),
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) =>
+                                    const ManageDeliveryPersonsScreen()))),
                     _divider(),
                     _menuTile(Icons.receipt_long_outlined, 'Manage Orders',
-                        onTap: () => Navigator.pushNamed(
-                            context, '/admin-orders')),
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) =>
+                                    const ManageOrdersScreen()))),
                   ]),
 
                   const SizedBox(height: 28),
@@ -78,7 +95,11 @@ class AdminProfileScreen extends StatelessWidget {
                       backgroundColor: AppColors.primary,
                       onPressed: () {
                         // TODO: Firebase sign out
-                        Navigator.pushReplacementNamed(context, '/login');
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const LoginScreen()),
+                        );
                       },
                     ),
                   ),
@@ -128,7 +149,7 @@ class AdminProfileScreen extends StatelessWidget {
                           fontSize: 20,
                           fontWeight: FontWeight.w600)),
                   const Spacer(),
-                  const SizedBox(width: 48), // Balance the back button
+                  const SizedBox(width: 48),
                 ],
               ),
             ),
@@ -192,8 +213,6 @@ class AdminProfileScreen extends StatelessWidget {
       ],
     );
   }
-
-  // ── Reusable Helpers ───────────────────────────────────────────────
 
   Widget _sectionTitle(String title) {
     return Text(title,

@@ -4,6 +4,7 @@ import '../../helpers/ui_helper.dart';
 import '../../helpers/app_size.dart';
 import '../../models/cart_item_model.dart';
 import '../../widgets/app_network_image.dart';
+import 'checkout_screen.dart';
 
 /// Cart Screen — item list, quantity, remove, total.
 class CartScreen extends StatefulWidget {
@@ -221,7 +222,10 @@ class _CartScreenState extends State<CartScreen> {
             child: UIHelper.customButton(
               text: 'Checkout →',
               onPressed: () =>
-                  Navigator.pushNamed(context, '/customer-checkout'),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CheckoutScreen()),
+                  ),
             ),
           ),
         ],

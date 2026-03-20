@@ -3,6 +3,7 @@ import '../../constants/app_colors.dart';
 import '../../helpers/ui_helper.dart';
 import '../../models/product_model.dart';
 import '../../widgets/app_network_image.dart';
+import 'product_details_screen.dart';
 
 /// Wishlist Screen — saved products.
 class WishlistScreen extends StatefulWidget {
@@ -100,9 +101,11 @@ class _WishlistScreenState extends State<WishlistScreen> {
                         ),
                       ],
                     ),
-                    onTap: () => Navigator.pushNamed(
-                        context, '/product-details',
-                        arguments: p),
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                ProductDetailsScreen(product: p))),
                   ),
                 );
               },

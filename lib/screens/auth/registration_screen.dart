@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:quickbasket/screens/customer/customer_home_screen.dart';
 import '../../constants/app_colors.dart';
 import '../../helpers/app_size.dart';
 import '../../helpers/ui_helper.dart';
 
-/// Registration Screen
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
 
@@ -16,10 +18,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+
   final _formKey = GlobalKey<FormState>();
+
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
 
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   void dispose() {
@@ -30,15 +36,49 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     super.dispose();
   }
 
-  void _handleRegister() {
+  Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // TODO: Replace with Firebase Authentication
-    // FirebaseAuth.instance.createUserWithEmailAndPassword(...)
-    // Then store user data in Firestore with role field.
+    try {
+      UserCredential userCredential = await _auth
+          .createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
 
-    UIHelper.showSnackBar(context, 'Account created successfully!');
-    Navigator.pop(context); // Go back to login
+      String uid = userCredential.user!.uid;
+
+      await _firestore.collection('users').doc(uid).set({
+        'name': _nameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'password': _passwordController.text.trim(),
+        'role': 'customer',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      UIHelper.showSnackBar(context, 'Account created successfully!');
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CustomerHomeScreen(),
+        ),
+      );
+    } on FirebaseAuthException catch (e) {
+      String message = 'Something went wrong';
+
+      if (e.code == 'email-already-in-use') {
+        message = 'Email already registered';
+      } else if (e.code == 'weak-password') {
+        message = 'Password must be at least 6 characters';
+      } else if (e.code == 'invalid-email') {
+        message = 'Invalid email address';
+      }
+
+      UIHelper.showSnackBar(context, message, isError: true);
+    } catch (e) {
+      UIHelper.showSnackBar(context, 'Error: $e', isError: true);
+    }
   }
 
   @override
@@ -49,7 +89,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.textPrimary),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: AppColors.textPrimary,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -61,18 +104,24 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Create Account',
-                    style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary)),
+                const Text(
+                  'Create Account',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
                 const SizedBox(height: 6),
-                const Text('Sign up to get started with QuickBasket',
-                    style:
-                        TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                const Text(
+                  'Sign up to get started with QuickBasket',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
                 const SizedBox(height: 32),
 
-                // ── Name ─────────────────────────────────────
                 UIHelper.customTextField(
                   controller: _nameController,
                   hintText: 'Full Name',
@@ -82,7 +131,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // ── Email ────────────────────────────────────
                 UIHelper.customTextField(
                   controller: _emailController,
                   hintText: 'Email Address',
@@ -96,7 +144,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // ── Password ─────────────────────────────────
                 UIHelper.customTextField(
                   controller: _passwordController,
                   hintText: 'Password',
@@ -121,7 +168,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // ── Confirm Password ─────────────────────────
                 UIHelper.customTextField(
                   controller: _confirmPasswordController,
                   hintText: 'Confirm Password',
@@ -148,7 +194,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 ),
                 const SizedBox(height: 28),
 
-                // ── Register Button ──────────────────────────
                 UIHelper.customButton(
                   text: 'Create Account',
                   onPressed: _handleRegister,
@@ -156,12 +201,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // ── Login Link ───────────────────────────────
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('Already have an account?',
-                        style: TextStyle(color: AppColors.textSecondary)),
+                    const Text(
+                      'Already have an account?',
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
                     UIHelper.customTextButton(
                       text: 'Login',
                       onPressed: () => Navigator.pop(context),
@@ -176,6 +222,4 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       ),
     );
   }
-
-
 }

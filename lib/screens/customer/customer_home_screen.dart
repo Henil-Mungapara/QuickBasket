@@ -3,6 +3,12 @@ import '../../constants/app_colors.dart';
 import '../../models/category_model.dart';
 import '../../models/product_model.dart';
 import '../../widgets/app_network_image.dart';
+import 'cart_screen.dart';
+import 'category_products_screen.dart';
+import 'customer_orders_screen.dart';
+import 'customer_profile_screen.dart';
+import 'product_details_screen.dart';
+import 'wishlist_screen.dart';
 
 /// Customer Home Screen — search, categories, featured products.
 class CustomerHomeScreen extends StatefulWidget {
@@ -94,16 +100,18 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
               IconButton(
                 icon: const Icon(Icons.favorite_border,
                     color: AppColors.textPrimary),
-                onPressed: () =>
-                    Navigator.pushNamed(context, '/customer-wishlist'),
+                onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const WishlistScreen())),
               ),
               Stack(
                 children: [
                   IconButton(
                     icon: const Icon(Icons.shopping_cart_outlined,
                         color: AppColors.textPrimary),
-                    onPressed: () =>
-                        Navigator.pushNamed(context, '/customer-cart'),
+                    onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const CartScreen())),
                   ),
                   Positioned(
                     right: 6,
@@ -181,8 +189,11 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
         itemBuilder: (ctx, i) {
           final cat = _categories[i];
           return GestureDetector(
-            onTap: () => Navigator.pushNamed(context, '/category-products',
-                arguments: cat),
+            onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) =>
+                        CategoryProductsScreen(category: cat))),
             child: Container(
               width: 78,
               margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -224,8 +235,11 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
         itemBuilder: (ctx, i) {
           final p = featured[i];
           return GestureDetector(
-            onTap: () => Navigator.pushNamed(context, '/product-details',
-                arguments: p),
+            onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) =>
+                        ProductDetailsScreen(product: p))),
             child: Container(
               width: 160,
               margin: const EdgeInsets.symmetric(horizontal: 6),
@@ -311,8 +325,11 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
         itemBuilder: (ctx, i) {
           final p = _products[i];
           return GestureDetector(
-            onTap: () => Navigator.pushNamed(context, '/product-details',
-                arguments: p),
+            onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) =>
+                        ProductDetailsScreen(product: p))),
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -414,13 +431,13 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
         onTap: (i) {
           switch (i) {
             case 1:
-              Navigator.pushNamed(context, '/customer-orders');
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerOrdersScreen()));
               break;
             case 2:
-              Navigator.pushNamed(context, '/customer-wishlist');
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const WishlistScreen()));
               break;
             case 3:
-              Navigator.pushNamed(context, '/customer-profile');
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerProfileScreen()));
               break;
           }
         },

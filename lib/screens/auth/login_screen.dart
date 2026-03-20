@@ -4,6 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../constants/app_colors.dart';
 import '../../helpers/app_size.dart';
 import '../../helpers/ui_helper.dart';
+import '../admin/admin_dashboard.dart';
+import '../customer/customer_home_screen.dart';
+import '../delivery/delivery_dashboard.dart';
+import 'registration_screen.dart';
 
 /// Login Screen — authentication UI.
 class LoginScreen extends StatefulWidget {
@@ -76,13 +80,22 @@ class _LoginScreenState extends State<LoginScreen>
       if (mounted) {
         if (role == 'admin') {
           UIHelper.showSnackBar(context, 'Welcome Admin!');
-          Navigator.pushReplacementNamed(context, '/admin-dashboard');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const AdminDashboard()),
+          );
         } else if (role == 'delivery_person') {
           UIHelper.showSnackBar(context, 'Welcome Delivery Partner!');
-          Navigator.pushReplacementNamed(context, '/delivery-dashboard');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const DeliveryDashboard()),
+          );
         } else {
           UIHelper.showSnackBar(context, 'Login Successful!');
-          Navigator.pushReplacementNamed(context, '/customer-home');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const CustomerHomeScreen()),
+          );
         }
       }
     } on FirebaseAuthException catch (e) {
@@ -275,8 +288,10 @@ class _LoginScreenState extends State<LoginScreen>
                             style: TextStyle(color: AppColors.textSecondary)),
                         UIHelper.customTextButton(
                           text: 'Register',
-                          onPressed: () =>
-                              Navigator.pushNamed(context, '/register'),
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const RegistrationScreen()),
+                          ),
                         ),
                       ],
                     ),
@@ -289,6 +304,4 @@ class _LoginScreenState extends State<LoginScreen>
       ),
     );
   }
-
-
 }

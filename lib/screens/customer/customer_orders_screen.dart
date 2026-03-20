@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../models/order_model.dart';
+import 'invoice_screen.dart';
 
 /// Customer Orders Screen — order history with status.
 class CustomerOrdersScreen extends StatelessWidget {
@@ -56,8 +57,10 @@ class CustomerOrdersScreen extends StatelessWidget {
               itemBuilder: (ctx, i) {
                 final o = orders[i];
                 return GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '/customer-invoice',
-                      arguments: o),
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => InvoiceScreen(order: o))),
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 14),
                     padding: const EdgeInsets.all(16),

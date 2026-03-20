@@ -5,12 +5,11 @@ import '../../models/order_model.dart';
 
 /// Invoice Screen — view, download, and print invoice.
 class InvoiceScreen extends StatelessWidget {
-  const InvoiceScreen({super.key});
+  final OrderModel? order;
+  const InvoiceScreen({super.key, this.order});
 
   @override
   Widget build(BuildContext context) {
-    final order = ModalRoute.of(context)?.settings.arguments as OrderModel?;
-
     // Use dummy if no argument passed
     final o = order ?? OrderModel.dummyOrders.first;
 

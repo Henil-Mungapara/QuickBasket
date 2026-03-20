@@ -3,15 +3,15 @@ import '../../constants/app_colors.dart';
 import '../../models/category_model.dart';
 import '../../models/product_model.dart';
 import '../../widgets/app_network_image.dart';
+import 'product_details_screen.dart';
 
 /// Category Products Screen — products filtered by a selected category.
 class CategoryProductsScreen extends StatelessWidget {
-  const CategoryProductsScreen({super.key});
+  final CategoryModel category;
+  const CategoryProductsScreen({super.key, required this.category});
 
   @override
   Widget build(BuildContext context) {
-    final category =
-        ModalRoute.of(context)!.settings.arguments as CategoryModel;
     final products = ProductModel.dummyProducts
         .where((p) => p.categoryId == category.id)
         .toList();
@@ -54,9 +54,11 @@ class CategoryProductsScreen extends StatelessWidget {
               itemBuilder: (ctx, i) {
                 final p = products[i];
                 return GestureDetector(
-                  onTap: () => Navigator.pushNamed(
-                      context, '/product-details',
-                      arguments: p),
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) =>
+                              ProductDetailsScreen(product: p))),
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,

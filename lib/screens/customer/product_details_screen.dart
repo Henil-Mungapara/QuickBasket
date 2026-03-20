@@ -7,12 +7,11 @@ import '../../models/product_model.dart';
 
 /// Product Details Screen
 class ProductDetailsScreen extends StatelessWidget {
-  const ProductDetailsScreen({super.key});
+  final ProductModel product;
+  const ProductDetailsScreen({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
-    final product =
-        ModalRoute.of(context)!.settings.arguments as ProductModel;
 
     return Scaffold(
       backgroundColor: AppColors.background,
