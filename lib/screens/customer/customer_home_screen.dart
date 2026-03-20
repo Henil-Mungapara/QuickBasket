@@ -10,7 +10,7 @@ import 'customer_profile_screen.dart';
 import 'product_details_screen.dart';
 import 'wishlist_screen.dart';
 
-/// Customer Home Screen — search, categories, featured products.
+/// Customer Home Screen — persistent bottom navigation with 4 tabs.
 class CustomerHomeScreen extends StatefulWidget {
   const CustomerHomeScreen({super.key});
 
@@ -19,11 +19,72 @@ class CustomerHomeScreen extends StatefulWidget {
 }
 
 class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
+  int _currentIndex = 0;
+
+  final List<Widget> _pages = const [
+    _HomeContent(),
+    CustomerOrdersScreen(),
+    WishlistScreen(),
+    CustomerProfileScreen(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
+      ),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+                color: AppColors.shadow,
+                blurRadius: 10,
+                offset: const Offset(0, -2)),
+          ],
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: AppColors.primary,
+          unselectedItemColor: AppColors.textSecondary,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          selectedFontSize: 12,
+          unselectedFontSize: 11,
+          items: const [
+            BottomNavigationBarItem(
+                icon: Icon(Icons.home_rounded), label: 'Home'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.receipt_long), label: 'Orders'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.favorite_border), label: 'Wishlist'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline), label: 'Profile'),
+          ],
+          onTap: (i) => setState(() => _currentIndex = i),
+        ),
+      ),
+    );
+  }
+}
+
+/// ─────────────────────────────────────────────────────────────────────
+/// Home Tab Content — search, categories, featured products, all products.
+/// ─────────────────────────────────────────────────────────────────────
+class _HomeContent extends StatefulWidget {
+  const _HomeContent();
+
+  @override
+  State<_HomeContent> createState() => _HomeContentState();
+}
+
+class _HomeContentState extends State<_HomeContent> {
   final _searchController = TextEditingController();
   final _categories = CategoryModel.dummyCategories;
   final _products = ProductModel.dummyProducts;
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +124,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
@@ -97,13 +157,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
           ),
           Row(
             children: [
-              IconButton(
-                icon: const Icon(Icons.favorite_border,
-                    color: AppColors.textPrimary),
-                onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const WishlistScreen())),
-              ),
               Stack(
                 children: [
                   IconButton(
@@ -399,47 +452,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
               ),
             ),
           );
-        },
-      ),
-    );
-  }
-
-  Widget _buildBottomNav() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-              color: AppColors.shadow, blurRadius: 10, offset: const Offset(0, -2)),
-        ],
-      ),
-      child: BottomNavigationBar(
-        currentIndex: 0,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textSecondary,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        selectedFontSize: 12,
-        unselectedFontSize: 11,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: 'Orders'),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite_border), label: 'Wishlist'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
-        ],
-        onTap: (i) {
-          switch (i) {
-            case 1:
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerOrdersScreen()));
-              break;
-            case 2:
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const WishlistScreen()));
-              break;
-            case 3:
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerProfileScreen()));
-              break;
-          }
         },
       ),
     );

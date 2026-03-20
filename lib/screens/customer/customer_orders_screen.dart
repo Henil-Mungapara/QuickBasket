@@ -32,12 +32,9 @@ class CustomerOrdersScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.primary,
         elevation: 0,
+        automaticallyImplyLeading: false,
         title: const Text('My Orders',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
       ),
       body: orders.isEmpty
           ? const Center(

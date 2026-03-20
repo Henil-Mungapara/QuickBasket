@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../constants/app_colors.dart';
 
-/// Reusable network image widget with loading shimmer and error fallback.
+/// Reusable asset image widget with error fallback.
 class AppNetworkImage extends StatelessWidget {
   final String imageUrl;
   final double? width;
@@ -25,27 +24,12 @@ class AppNetworkImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(borderRadius),
-      child: CachedNetworkImage(
-        imageUrl: imageUrl,
+      child: Image.asset(
+        imageUrl,
         width: width,
         height: height,
         fit: fit,
-        placeholder: (context, url) => Container(
-          width: width,
-          height: height,
-          color: AppColors.primary.withValues(alpha: 0.06),
-          child: const Center(
-            child: SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: AppColors.primary,
-              ),
-            ),
-          ),
-        ),
-        errorWidget: (context, url, error) => Container(
+        errorBuilder: (context, error, stackTrace) => Container(
           width: width,
           height: height,
           color: AppColors.primary.withValues(alpha: 0.06),

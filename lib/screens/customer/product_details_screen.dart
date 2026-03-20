@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../constants/app_colors.dart';
 import '../../helpers/ui_helper.dart';
 import '../../helpers/app_size.dart';
@@ -47,16 +46,10 @@ class ProductDetailsScreen extends StatelessWidget {
               const SizedBox(width: 8),
             ],
             flexibleSpace: FlexibleSpaceBar(
-              background: CachedNetworkImage(
-                imageUrl: product.imageUrl,
+              background: Image.asset(
+                product.imageUrl,
                 fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  color: AppColors.primary.withValues(alpha: 0.08),
-                  child: const Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
-                  ),
-                ),
-                errorWidget: (context, url, error) => Container(
+                errorBuilder: (context, error, stackTrace) => Container(
                   color: AppColors.primary.withValues(alpha: 0.08),
                   child: const Center(
                     child: Icon(Icons.image_outlined,

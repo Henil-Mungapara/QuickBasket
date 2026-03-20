@@ -31,9 +31,14 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   void initState() {
     super.initState();
-    _animController =
-        AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
-    _fadeAnimation = CurvedAnimation(parent: _animController, curve: Curves.easeInOut);
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeInOut,
+    );
     _animController.forward();
   }
 
@@ -54,9 +59,9 @@ class _LoginScreenState extends State<LoginScreen>
       // 1. Authenticate with Firebase Auth
       UserCredential userCred = await FirebaseAuth.instance
           .signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+          );
 
       // 2. Fetch User Data from Firestore to check Role
       String uid = userCred.user!.uid;
@@ -157,20 +162,30 @@ class _LoginScreenState extends State<LoginScreen>
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.shopping_basket_rounded,
-                          size: 44, color: Colors.white),
+                      child: const Icon(
+                        Icons.shopping_basket_rounded,
+                        size: 44,
+                        color: Colors.white,
+                      ),
                     ),
                     const SizedBox(height: 24),
-                    const Text('QuickBasket',
-                        style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
-                            letterSpacing: 0.5)),
+                    const Text(
+                      'QuickBasket',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
                     const SizedBox(height: 6),
-                    const Text('Fresh groceries at your doorstep',
-                        style: TextStyle(
-                            fontSize: 14, color: AppColors.textSecondary)),
+                    const Text(
+                      'Fresh groceries at your doorstep',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
                     const SizedBox(height: 40),
 
                     // ── Email ──────────────────────────────────
@@ -201,11 +216,13 @@ class _LoginScreenState extends State<LoginScreen>
                           color: AppColors.textSecondary,
                           size: 22,
                         ),
-                        onPressed: () =>
-                            setState(() => _obscurePassword = !_obscurePassword),
+                        onPressed: () => setState(
+                          () => _obscurePassword = !_obscurePassword,
+                        ),
                       ),
                       validator: (v) {
-                        if (v == null || v.isEmpty) return 'Password is required';
+                        if (v == null || v.isEmpty)
+                          return 'Password is required';
                         if (v.length < 6) return 'Minimum 6 characters';
                         return null;
                       },
@@ -223,12 +240,29 @@ class _LoginScreenState extends State<LoginScreen>
                     // ── OR Divider ────────────────────────────
                     Row(
                       children: [
-                        Expanded(child: Divider(color: AppColors.divider, thickness: 1)),
+                        Expanded(
+                          child: Divider(
+                            color: AppColors.divider,
+                            thickness: 1,
+                          ),
+                        ),
                         const Padding(
                           padding: EdgeInsets.symmetric(horizontal: 16),
-                          child: Text('OR', style: TextStyle(color: AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
+                          child: Text(
+                            'OR',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                         ),
-                        Expanded(child: Divider(color: AppColors.divider, thickness: 1)),
+                        Expanded(
+                          child: Divider(
+                            color: AppColors.divider,
+                            thickness: 1,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -255,14 +289,17 @@ class _LoginScreenState extends State<LoginScreen>
                                 fontSize: 22,
                                 fontWeight: FontWeight.w700,
                                 foreground: Paint()
-                                  ..shader = const LinearGradient(
-                                    colors: [
-                                      Color(0xFF4285F4),
-                                      Color(0xFFDB4437),
-                                      Color(0xFFF4B400),
-                                      Color(0xFF0F9D58),
-                                    ],
-                                  ).createShader(const Rect.fromLTWH(0, 0, 24, 24)),
+                                  ..shader =
+                                      const LinearGradient(
+                                        colors: [
+                                          Color(0xFF4285F4),
+                                          Color(0xFFDB4437),
+                                          Color(0xFFF4B400),
+                                          Color(0xFF0F9D58),
+                                        ],
+                                      ).createShader(
+                                        const Rect.fromLTWH(0, 0, 24, 24),
+                                      ),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -284,13 +321,17 @@ class _LoginScreenState extends State<LoginScreen>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text("Don't have an account?",
-                            style: TextStyle(color: AppColors.textSecondary)),
+                        const Text(
+                          "Don't have an account?",
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
                         UIHelper.customTextButton(
                           text: 'Register',
                           onPressed: () => Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const RegistrationScreen()),
+                            MaterialPageRoute(
+                              builder: (_) => const RegistrationScreen(),
+                            ),
                           ),
                         ),
                       ],

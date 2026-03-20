@@ -16,13 +16,13 @@ class CategoryModel {
 
   
   static List<CategoryModel> dummyCategories = [
-    CategoryModel(id: '1', name: 'Fruits', icon: 'fruit', imageUrl: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=200&q=80'),
-    CategoryModel(id: '2', name: 'Vegetables', icon: 'vegetable', imageUrl: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=200&q=80'),
-    CategoryModel(id: '3', name: 'Dairy', icon: 'dairy', imageUrl: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=200&q=80'),
-    CategoryModel(id: '4', name: 'Beverages', icon: 'beverage', imageUrl: 'https://images.unsplash.com/photo-1534353473418-4cfa6c56fd38?w=200&q=80'),
-    CategoryModel(id: '5', name: 'Snacks', icon: 'snack', imageUrl: 'https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=200&q=80'),
-    CategoryModel(id: '6', name: 'Bakery', icon: 'bakery', imageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=200&q=80'),
-    CategoryModel(id: '7', name: 'Meat', icon: 'meat', imageUrl: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=200&q=80'),
-    CategoryModel(id: '8', name: 'Frozen', icon: 'frozen', imageUrl: 'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=200&q=80'),
+    CategoryModel(id: '1', name: 'Fruits', icon: 'fruit', imageUrl: 'assets/images/fruits.png'),
+    CategoryModel(id: '2', name: 'Vegetables', icon: 'vegetable', imageUrl: 'assets/images/veg.png'),
+    CategoryModel(id: '3', name: 'Dairy', icon: 'dairy', imageUrl: 'assets/images/milks.png'),
+    CategoryModel(id: '4', name: 'Beverages', icon: 'beverage', imageUrl: 'assets/images/sodas.png'),
+    CategoryModel(id: '5', name: 'Snacks', icon: 'snack', imageUrl: 'assets/images/maggie.jpg'),
+    CategoryModel(id: '6', name: 'Bakery', icon: 'bakery', imageUrl: 'assets/images/besan.png'),
+    CategoryModel(id: '7', name: 'Dry Fruits', icon: 'dryfruits', imageUrl: 'assets/images/dryfruits.webp'),
+    CategoryModel(id: '8', name: 'Dal & Pulses', icon: 'dal', imageUrl: 'assets/images/dal.png'),
   ];
 }

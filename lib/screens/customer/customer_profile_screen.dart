@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:quickbasket/screens/auth/login_screen.dart';
 import '../../constants/app_colors.dart';
 import '../../helpers/ui_helper.dart';
 
@@ -74,9 +76,16 @@ class CustomerProfileScreen extends StatelessWidget {
                     child: UIHelper.customButton(
                       text: 'Logout',
                       backgroundColor: AppColors.primary,
-                      onPressed: () {
-                        // TODO: Firebase sign out
-                        Navigator.pushReplacementNamed(context, '/login');
+                      onPressed: () async {
+                        try {
+                          await FirebaseAuth.instance.signOut();
+
+                          UIHelper.showSnackBar(context, 'Logged out successfully');
+
+                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>LoginScreen()));
+                        } catch (e) {
+                          UIHelper.showSnackBar(context, 'Logout failed: $e', isError: true);
+                        }
                       },
                     ),
                   ),
@@ -111,26 +120,22 @@ class CustomerProfileScreen extends StatelessWidget {
             ),
           ),
           child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new,
-                        color: Colors.white, size: 20),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  const Spacer(),
-                  const Text('My Profile',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600)),
-                  const Spacer(),
-                  const SizedBox(width: 48), // Balance the back button
-                ],
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 48), // Balance spacing
+                    const Spacer(),
+                    const Text('My Profile',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600)),
+                    const Spacer(),
+                    const SizedBox(width: 48), // Balance spacing
+                  ],
+                ),
               ),
-            ),
           ),
         ),
         // Floating avatar

@@ -1,9 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:quickbasket/firebase_options.dart';
-import 'package:quickbasket/screens/auth/registration_screen.dart';
+import 'package:quickbasket/screens/splash_screen.dart';
 import 'constants/app_colors.dart';
-import 'screens/auth/login_screen.dart';
 
 /// ─────────────────────────────────────────────────────────────────────
 /// QuickBasket — Grocery Delivery Application
@@ -40,7 +39,7 @@ class QuickBasketApp extends StatelessWidget {
           elevation: 0,
         ),
       ),
-      home: const LoginScreen(),
+      home: const SplashScreen(),
     );
   }
 }

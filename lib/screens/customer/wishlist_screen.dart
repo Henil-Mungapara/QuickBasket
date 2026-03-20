@@ -25,12 +25,9 @@ class _WishlistScreenState extends State<WishlistScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.primary,
         elevation: 0,
+        automaticallyImplyLeading: false,
         title: const Text('My Wishlist',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
       ),
       body: _wishlist.isEmpty
           ? const Center(
