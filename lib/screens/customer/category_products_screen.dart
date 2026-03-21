@@ -6,8 +6,7 @@ import '../../models/product_model.dart';
 import '../../widgets/app_network_image.dart';
 import 'product_details_screen.dart';
 
-/// Category Products Screen — products filtered by a selected category.
-/// Fetches from Firestore using StreamBuilder.
+/// Category Products Screen — products filtered by category from Firestore.
 class CategoryProductsScreen extends StatelessWidget {
   final CategoryModel category;
   const CategoryProductsScreen({super.key, required this.category});
@@ -17,13 +16,25 @@ class CategoryProductsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.primary,
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF2ECC71), Color(0xFF27AE60)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         title: Text(category.name,
             style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.w600)),
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 20)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -35,23 +46,51 @@ class CategoryProductsScreen extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
-                child: CircularProgressIndicator(color: AppColors.primary));
+                child: CircularProgressIndicator(
+                    color: AppColors.primary, strokeWidth: 2.5));
           }
           if (snapshot.hasError) {
-            return const Center(child: Text('Error loading products'));
+            return Center(
+                child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline,
+                    size: 56,
+                    color: AppColors.error.withValues(alpha: 0.6)),
+                const SizedBox(height: 12),
+                const Text('Error loading products',
+                    style: TextStyle(color: AppColors.textSecondary)),
+              ],
+            ));
           }
 
           final docs = snapshot.data?.docs ?? [];
           if (docs.isEmpty) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.inventory_2_outlined,
-                      size: 64, color: AppColors.divider),
-                  SizedBox(height: 12),
-                  Text('No products in this category',
-                      style: TextStyle(color: AppColors.textSecondary)),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.08),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.inventory_2_outlined,
+                        size: 48, color: AppColors.primary),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text('No products in this category',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary)),
+                  const SizedBox(height: 6),
+                  Text('Check back later for updates!',
+                      style: TextStyle(
+                          fontSize: 13,
+                          color:
+                              AppColors.textSecondary.withValues(alpha: 0.6))),
                 ],
               ),
             );
@@ -63,7 +102,7 @@ class CategoryProductsScreen extends StatelessWidget {
               crossAxisCount: 2,
               mainAxisSpacing: 14,
               crossAxisSpacing: 14,
-              childAspectRatio: 0.72,
+              childAspectRatio: 0.68,
             ),
             itemCount: docs.length,
             itemBuilder: (ctx, i) {
@@ -77,37 +116,50 @@ class CategoryProductsScreen extends StatelessWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(18),
                     boxShadow: [
                       BoxShadow(
-                          color: AppColors.shadow,
-                          blurRadius: 8,
-                          offset: const Offset(0, 2)),
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3)),
                     ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Image — BoxFit.contain so nothing is cut off
                       Expanded(
-                        flex: 3,
-                        child: ClipRRect(
-                          borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(16)),
-                          child: AppNetworkImage(
-                            imageUrl: p.imageUrl,
-                            width: double.infinity,
-                            borderRadius: 0,
+                        flex: 5,
+                        child: Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.05),
+                            borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(18)),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(18)),
+                            child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: AppNetworkImage(
+                                imageUrl: p.imageUrl,
+                                width: double.infinity,
+                                fit: BoxFit.contain,
+                                borderRadius: 0,
+                              ),
+                            ),
                           ),
                         ),
                       ),
+                      // Info
                       Expanded(
-                        flex: 2,
+                        flex: 3,
                         child: Padding(
-                          padding: const EdgeInsets.all(10),
+                          padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(p.name,
                                   maxLines: 2,
@@ -122,15 +174,18 @@ class CategoryProductsScreen extends StatelessWidget {
                                 children: [
                                   Text('₹${p.price.toStringAsFixed(0)}',
                                       style: const TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 15,
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 16,
                                           color: AppColors.primary)),
                                   Container(
-                                    padding: const EdgeInsets.all(3),
+                                    padding: const EdgeInsets.all(4),
                                     decoration: BoxDecoration(
-                                      color: AppColors.primary,
-                                      borderRadius:
-                                          BorderRadius.circular(6),
+                                      gradient: const LinearGradient(
+                                          colors: [
+                                            Color(0xFF2ECC71),
+                                            Color(0xFF27AE60)
+                                          ]),
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: const Icon(Icons.add,
                                         color: Colors.white, size: 16),

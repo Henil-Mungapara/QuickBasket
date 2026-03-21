@@ -53,12 +53,10 @@ class CustomerProfileScreen extends StatelessWidget {
                   const SizedBox(height: 12),
                   _infoCard([
                     _menuTile(Icons.shopping_bag_outlined, 'My Orders',
-                        onTap: () => Navigator.pushNamed(
-                            context, '/customer-orders')),
+                        onTap: () {}),
                     _divider(),
                     _menuTile(Icons.favorite_border, 'Wishlist',
-                        onTap: () => Navigator.pushNamed(
-                            context, '/customer-wishlist')),
+                        onTap: () {}),
                     _divider(),
                     _menuTile(
                         Icons.location_on_outlined, 'Saved Addresses',
@@ -79,11 +77,11 @@ class CustomerProfileScreen extends StatelessWidget {
                       onPressed: () async {
                         try {
                           await FirebaseAuth.instance.signOut();
-
+                          if (!context.mounted) return;
                           UIHelper.showSnackBar(context, 'Logged out successfully');
-
-                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>LoginScreen()));
+                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => LoginScreen()));
                         } catch (e) {
+                          if (!context.mounted) return;
                           UIHelper.showSnackBar(context, 'Logout failed: $e', isError: true);
                         }
                       },

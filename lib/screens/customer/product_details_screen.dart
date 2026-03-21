@@ -5,53 +5,66 @@ import '../../helpers/app_size.dart';
 import '../../models/product_model.dart';
 import '../../widgets/app_network_image.dart';
 
-/// Product Details Screen
+/// Product Details Screen — hero image, info, add-to-cart bottom bar.
 class ProductDetailsScreen extends StatelessWidget {
   final ProductModel product;
   const ProductDetailsScreen({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Colors.white,
       body: CustomScrollView(
         slivers: [
-          // ── Image Header ───────────────────────────────────
+          // ── Hero Image ─────────────────────────────────────
           SliverAppBar(
             expandedHeight: AppSize.heightFraction(context, 0.38),
             pinned: true,
             backgroundColor: AppColors.primary,
-            leading: IconButton(
-              icon: const CircleAvatar(
-                backgroundColor: Colors.white,
-                radius: 18,
-                child: Icon(Icons.arrow_back_ios_new,
-                    color: AppColors.textPrimary, size: 18),
+            leading: Padding(
+              padding: const EdgeInsets.all(8),
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.arrow_back_ios_new_rounded,
+                      color: AppColors.textPrimary, size: 18),
+                ),
               ),
-              onPressed: () => Navigator.pop(context),
             ),
             actions: [
-              IconButton(
-                icon: const CircleAvatar(
-                  backgroundColor: Colors.white,
-                  radius: 18,
-                  child: Icon(Icons.favorite_border,
-                      color: AppColors.error, size: 20),
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: GestureDetector(
+                  onTap: () =>
+                      UIHelper.showSnackBar(context, 'Added to Wishlist ❤️'),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.favorite_border_rounded,
+                        color: AppColors.error, size: 20),
+                  ),
                 ),
-                onPressed: () {
-                  // TODO: Add to wishlist in Firestore
-                  UIHelper.showSnackBar(context, 'Added to Wishlist ❤️');
-                },
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 4),
             ],
             flexibleSpace: FlexibleSpaceBar(
-              background: AppNetworkImage(
-                imageUrl: product.imageUrl,
-                width: double.infinity,
-                height: double.infinity,
-                borderRadius: 0,
+              background: Container(
+                color: AppColors.primary.withValues(alpha: 0.06),
+                padding: const EdgeInsets.all(24),
+                child: AppNetworkImage(
+                  imageUrl: product.imageUrl,
+                  width: double.infinity,
+                  height: double.infinity,
+                  fit: BoxFit.contain,
+                  borderRadius: 0,
+                ),
               ),
             ),
           ),
@@ -69,69 +82,84 @@ class ProductDetailsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Name & Price ─────────────────────
+                  // Name & Price
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
                         child: Text(product.name,
                             style: const TextStyle(
                                 fontSize: 24,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w800,
                                 color: AppColors.textPrimary)),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
+                          gradient: LinearGradient(
+                            colors: [
+                              AppColors.primary.withValues(alpha: 0.12),
+                              AppColors.primary.withValues(alpha: 0.06),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                         child: Text(
                             '₹${product.price.toStringAsFixed(0)}',
                             style: const TextStyle(
                                 fontSize: 22,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w800,
                                 color: AppColors.primary)),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
 
-                  // ── Stock Status ─────────────────────
-                  Row(
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: product.stock > 0
-                              ? AppColors.success
-                              : AppColors.error,
-                          shape: BoxShape.circle,
+                  // Stock Status
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: product.stock > 0
+                          ? AppColors.success.withValues(alpha: 0.1)
+                          : AppColors.error.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 7,
+                          height: 7,
+                          decoration: BoxDecoration(
+                            color: product.stock > 0
+                                ? AppColors.success
+                                : AppColors.error,
+                            shape: BoxShape.circle,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                          product.stock > 0
-                              ? 'In Stock (${product.stock} available)'
-                              : 'Out of Stock',
-                          style: TextStyle(
-                              fontSize: 13,
-                              color: product.stock > 0
-                                  ? AppColors.success
-                                  : AppColors.error,
-                              fontWeight: FontWeight.w500)),
-                    ],
+                        const SizedBox(width: 6),
+                        Text(
+                            product.stock > 0
+                                ? 'In Stock (${product.stock} available)'
+                                : 'Out of Stock',
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: product.stock > 0
+                                    ? AppColors.success
+                                    : AppColors.error,
+                                fontWeight: FontWeight.w600)),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
 
-                  // ── Description ──────────────────────
+                  // Description
                   const Text('Description',
                       style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary)),
                   const SizedBox(height: 8),
                   Text(
@@ -141,17 +169,20 @@ class ProductDetailsScreen extends StatelessWidget {
                       style: const TextStyle(
                           fontSize: 14,
                           color: AppColors.textSecondary,
-                          height: 1.5)),
+                          height: 1.6)),
                   const SizedBox(height: 28),
 
-                  // ── Info chips ───────────────────────
+                  // Info Chips
                   Row(
                     children: [
-                      _infoChip(Icons.local_shipping_outlined, 'Free Delivery'),
+                      _infoChip(Icons.local_shipping_outlined,
+                          'Free Delivery', const Color(0xFF3498DB)),
                       const SizedBox(width: 10),
-                      _infoChip(Icons.verified_outlined, '100% Fresh'),
+                      _infoChip(Icons.verified_outlined, '100% Fresh',
+                          const Color(0xFF2ECC71)),
                       const SizedBox(width: 10),
-                      _infoChip(Icons.access_time, '30 min'),
+                      _infoChip(Icons.access_time_rounded, '30 min',
+                          const Color(0xFF8E44AD)),
                     ],
                   ),
                   const SizedBox(height: 100),
@@ -162,15 +193,15 @@ class ProductDetailsScreen extends StatelessWidget {
         ],
       ),
 
-      // ── Bottom Bar ─────────────────────────────────────────
+      // ── Bottom Bar ───────────────────────────────────────────
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-                color: AppColors.shadow,
-                blurRadius: 10,
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 16,
                 offset: const Offset(0, -4)),
           ],
         ),
@@ -180,23 +211,22 @@ class ProductDetailsScreen extends StatelessWidget {
               child: UIHelper.customButton(
                 text: 'Add to Cart 🛒',
                 onPressed: () {
-                  // TODO: Add to cart in state / Firestore
-                  UIHelper.showSnackBar(context, '${product.name} added to cart');
+                  UIHelper.showSnackBar(
+                      context, '${product.name} added to cart');
                 },
               ),
             ),
             const SizedBox(width: 12),
             Container(
               decoration: BoxDecoration(
-                color: AppColors.accent.withValues(alpha: 0.15),
+                color: AppColors.accent.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: IconButton(
-                icon: const Icon(Icons.favorite_border,
+                icon: const Icon(Icons.favorite_border_rounded,
                     color: AppColors.accent, size: 26),
                 onPressed: () {
-                  // TODO: Add to wishlist in Firestore
-                  UIHelper.showSnackBar(context, 'Added to Wishlist');
+                  UIHelper.showSnackBar(context, 'Added to Wishlist ❤️');
                 },
               ),
             ),
@@ -206,24 +236,24 @@ class ProductDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _infoChip(IconData icon, String text) {
+  Widget _infoChip(IconData icon, String text, Color color) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: AppColors.background,
-          borderRadius: BorderRadius.circular(10),
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           children: [
-            Icon(icon, color: AppColors.primary, size: 20),
-            const SizedBox(height: 4),
+            Icon(icon, color: color, size: 22),
+            const SizedBox(height: 5),
             Text(text,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary)),
+                    color: color)),
           ],
         ),
       ),
