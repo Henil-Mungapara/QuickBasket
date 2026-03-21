@@ -5,16 +5,34 @@ class CategoryModel {
   final String icon; // Material icon name or asset path
   final String imageUrl;
 
+  final DateTime? createdAt;
+
   CategoryModel({
     required this.id,
     required this.name,
     this.icon = '',
     this.imageUrl = '',
+    this.createdAt,
   });
 
-  // TODO: Add fromJson / toJson when Firebase Firestore is integrated.
+  factory CategoryModel.fromJson(String id, Map<String, dynamic> json) {
+    return CategoryModel(
+      id: id,
+      name: json['name'] ?? '',
+      icon: json['icon'] ?? '',
+      imageUrl: json['imageUrl'] ?? '',
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'].toString()) : null,
+    );
+  }
 
-  
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'icon': icon,
+      'imageUrl': imageUrl,
+      'createdAt': createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
+    };
+  }  
   static List<CategoryModel> dummyCategories = [
     CategoryModel(id: '1', name: 'Fruits', icon: 'fruit', imageUrl: 'assets/images/fruits.png'),
     CategoryModel(id: '2', name: 'Vegetables', icon: 'vegetable', imageUrl: 'assets/images/veg.png'),

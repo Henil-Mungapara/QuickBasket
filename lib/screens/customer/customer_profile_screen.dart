@@ -34,10 +34,10 @@ class CustomerProfileScreen extends StatelessWidget {
                   _sectionTitle('Personal Information'),
                   const SizedBox(height: 12),
                   _infoCard([
-                    _infoRow(Icons.person_outline, 'Full Name', 'John Doe'),
+                    _infoRow(Icons.person_outline, 'Full Name', 'Radhu'),
                     _divider(),
                     _infoRow(
-                        Icons.email_outlined, 'Email', 'john@email.com'),
+                        Icons.email_outlined, 'Email', 'radhu@email.com'),
                     _divider(),
                     _infoRow(
                         Icons.phone_outlined, 'Phone', '+91 98765 43210'),
@@ -173,13 +173,13 @@ class CustomerProfileScreen extends StatelessWidget {
           right: 0,
           child: Column(
             children: [
-              const Text('John Doe',
+              const Text('Radhu',
                   style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary)),
               const SizedBox(height: 4),
-              Text('john@email.com',
+              Text('radhu@email.com',
                   style: TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary.withValues(alpha: 0.8))),

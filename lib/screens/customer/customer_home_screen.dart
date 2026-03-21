@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../models/category_model.dart';
@@ -73,6 +74,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
 /// ─────────────────────────────────────────────────────────────────────
 /// Home Tab Content — search, categories, featured products, all products.
+/// All data is fetched from Firestore using StreamBuilder.
 /// ─────────────────────────────────────────────────────────────────────
 class _HomeContent extends StatefulWidget {
   const _HomeContent();
@@ -83,8 +85,6 @@ class _HomeContent extends StatefulWidget {
 
 class _HomeContentState extends State<_HomeContent> {
   final _searchController = TextEditingController();
-  final _categories = CategoryModel.dummyCategories;
-  final _products = ProductModel.dummyProducts;
 
   @override
   Widget build(BuildContext context) {
@@ -103,19 +103,19 @@ class _HomeContentState extends State<_HomeContent> {
               _buildSearchBar(),
               const SizedBox(height: 24),
 
-              // ── Categories ────────────────────────────────
+              // ── Categories (from Firestore) ───────────────
               _sectionTitle('Shop by Category'),
               const SizedBox(height: 12),
               _buildCategoryList(),
               const SizedBox(height: 24),
 
-              // ── Featured ──────────────────────────────────
+              // ── Featured Products (from Firestore) ────────
               _sectionTitle('Featured Products'),
               const SizedBox(height: 12),
               _buildFeaturedProducts(),
               const SizedBox(height: 24),
 
-              // ── All Products Grid ─────────────────────────
+              // ── All Products Grid (from Firestore) ────────
               _sectionTitle('All Products'),
               const SizedBox(height: 12),
               _buildProductGrid(),
@@ -149,8 +149,7 @@ class _HomeContentState extends State<_HomeContent> {
                   const SizedBox(width: 4),
                   Text('Delivering to Home',
                       style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textSecondary)),
+                          fontSize: 13, color: AppColors.textSecondary)),
                 ],
               ),
             ],
@@ -164,7 +163,8 @@ class _HomeContentState extends State<_HomeContent> {
                         color: AppColors.textPrimary),
                     onPressed: () => Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const CartScreen())),
+                        MaterialPageRoute(
+                            builder: (_) => const CartScreen())),
                   ),
                   Positioned(
                     right: 6,
@@ -211,7 +211,8 @@ class _HomeContentState extends State<_HomeContent> {
           decoration: InputDecoration(
             hintText: 'Search for groceries...',
             hintStyle: TextStyle(
-                color: AppColors.textSecondary.withValues(alpha: 0.6), fontSize: 14),
+                color: AppColors.textSecondary.withValues(alpha: 0.6),
+                fontSize: 14),
             prefixIcon: const Icon(Icons.search, color: AppColors.primary),
             border: InputBorder.none,
             contentPadding: const EdgeInsets.symmetric(vertical: 14),
@@ -232,228 +233,289 @@ class _HomeContentState extends State<_HomeContent> {
     );
   }
 
+  // ── Categories from Firestore ──────────────────────────────
   Widget _buildCategoryList() {
     return SizedBox(
       height: 100,
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        scrollDirection: Axis.horizontal,
-        itemCount: _categories.length,
-        itemBuilder: (ctx, i) {
-          final cat = _categories[i];
-          return GestureDetector(
-            onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) =>
-                        CategoryProductsScreen(category: cat))),
-            child: Container(
-              width: 78,
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              child: Column(
-                children: [
-                  AppNetworkImage(
-                    imageUrl: cat.imageUrl,
-                    width: 60,
-                    height: 60,
-                    borderRadius: 16,
-                    errorIcon: Icons.category,
+      child: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('categories')
+            .orderBy('createdAt', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+                child: CircularProgressIndicator(color: AppColors.primary));
+          }
+          final docs = snapshot.data?.docs ?? [];
+          if (docs.isEmpty) {
+            return const Center(
+                child: Text('No categories',
+                    style: TextStyle(color: AppColors.textSecondary)));
+          }
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            scrollDirection: Axis.horizontal,
+            itemCount: docs.length,
+            itemBuilder: (ctx, i) {
+              final data = docs[i].data() as Map<String, dynamic>;
+              final cat = CategoryModel.fromJson(docs[i].id, data);
+              return GestureDetector(
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) =>
+                            CategoryProductsScreen(category: cat))),
+                child: Container(
+                  width: 78,
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Column(
+                    children: [
+                      AppNetworkImage(
+                        imageUrl: cat.imageUrl,
+                        width: 60,
+                        height: 60,
+                        borderRadius: 16,
+                        errorIcon: Icons.category,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(cat.name,
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary)),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(cat.name,
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary)),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           );
         },
       ),
     );
   }
 
+  // ── Featured Products from Firestore (first 4) ─────────────
   Widget _buildFeaturedProducts() {
-    final featured = _products.take(4).toList();
     return SizedBox(
       height: 200,
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        scrollDirection: Axis.horizontal,
-        itemCount: featured.length,
-        itemBuilder: (ctx, i) {
-          final p = featured[i];
-          return GestureDetector(
-            onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) =>
-                        ProductDetailsScreen(product: p))),
-            child: Container(
-              width: 160,
-              margin: const EdgeInsets.symmetric(horizontal: 6),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                      color: AppColors.shadow,
-                      blurRadius: 10,
-                      offset: const Offset(0, 3)),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(16)),
-                    child: AppNetworkImage(
-                      imageUrl: p.imageUrl,
-                      width: double.infinity,
-                      height: 110,
-                    ),
+      child: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('products')
+            .orderBy('createdAt', descending: true)
+            .limit(4)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+                child: CircularProgressIndicator(color: AppColors.primary));
+          }
+          final docs = snapshot.data?.docs ?? [];
+          if (docs.isEmpty) {
+            return const Center(
+                child: Text('No products',
+                    style: TextStyle(color: AppColors.textSecondary)));
+          }
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            scrollDirection: Axis.horizontal,
+            itemCount: docs.length,
+            itemBuilder: (ctx, i) {
+              final data = docs[i].data() as Map<String, dynamic>;
+              final p = ProductModel.fromJson(docs[i].id, data);
+              return GestureDetector(
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => ProductDetailsScreen(product: p))),
+                child: Container(
+                  width: 160,
+                  margin: const EdgeInsets.symmetric(horizontal: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                          color: AppColors.shadow,
+                          blurRadius: 10,
+                          offset: const Offset(0, 3)),
+                    ],
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(p.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
-                                color: AppColors.textPrimary)),
-                        const SizedBox(height: 4),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(16)),
+                        child: AppNetworkImage(
+                          imageUrl: p.imageUrl,
+                          width: double.infinity,
+                          height: 110,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('₹${p.price.toStringAsFixed(0)}',
+                            Text(p.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 16,
-                                    color: AppColors.primary)),
-                            Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(Icons.add,
-                                  color: Colors.white, size: 18),
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                    color: AppColors.textPrimary)),
+                            const SizedBox(height: 4),
+                            Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('₹${p.price.toStringAsFixed(0)}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 16,
+                                        color: AppColors.primary)),
+                                Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(Icons.add,
+                                      color: Colors.white, size: 18),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           );
         },
       ),
     );
   }
 
+  // ── All Products Grid from Firestore ───────────────────────
   Widget _buildProductGrid() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 0.72,
-        ),
-        itemCount: _products.length,
-        itemBuilder: (ctx, i) {
-          final p = _products[i];
-          return GestureDetector(
-            onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) =>
-                        ProductDetailsScreen(product: p))),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                      color: AppColors.shadow,
-                      blurRadius: 8,
-                      offset: const Offset(0, 2)),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(16)),
-                      child: AppNetworkImage(
-                        imageUrl: p.imageUrl,
-                        width: double.infinity,
-                        borderRadius: 0,
-                      ),
-                    ),
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('products')
+          .orderBy('createdAt', descending: true)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+              child: CircularProgressIndicator(color: AppColors.primary));
+        }
+        final docs = snapshot.data?.docs ?? [];
+        if (docs.isEmpty) {
+          return const Center(
+              child: Text('No products',
+                  style: TextStyle(color: AppColors.textSecondary)));
+        }
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 0.72,
+            ),
+            itemCount: docs.length,
+            itemBuilder: (ctx, i) {
+              final data = docs[i].data() as Map<String, dynamic>;
+              final p = ProductModel.fromJson(docs[i].id, data);
+              return GestureDetector(
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => ProductDetailsScreen(product: p))),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                          color: AppColors.shadow,
+                          blurRadius: 8,
+                          offset: const Offset(0, 2)),
+                    ],
                   ),
-                  Expanded(
-                    flex: 2,
-                    child: Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(p.name,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 13,
-                                  color: AppColors.textPrimary)),
-                          Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(16)),
+                          child: AppNetworkImage(
+                            imageUrl: p.imageUrl,
+                            width: double.infinity,
+                            borderRadius: 0,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment:
                                 MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('₹${p.price.toStringAsFixed(0)}',
+                              Text(p.name,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 15,
-                                      color: AppColors.primary)),
-                              Container(
-                                padding: const EdgeInsets.all(3),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: const Icon(Icons.add,
-                                    color: Colors.white, size: 16),
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                      color: AppColors.textPrimary)),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('₹${p.price.toStringAsFixed(0)}',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 15,
+                                          color: AppColors.primary)),
+                                  Container(
+                                    padding: const EdgeInsets.all(3),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary,
+                                      borderRadius:
+                                          BorderRadius.circular(6),
+                                    ),
+                                    child: const Icon(Icons.add,
+                                        color: Colors.white, size: 16),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

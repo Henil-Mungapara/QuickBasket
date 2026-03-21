@@ -3,6 +3,7 @@ import '../../constants/app_colors.dart';
 import '../../helpers/ui_helper.dart';
 import '../../helpers/app_size.dart';
 import '../../models/product_model.dart';
+import '../../widgets/app_network_image.dart';
 
 /// Product Details Screen
 class ProductDetailsScreen extends StatelessWidget {
@@ -46,16 +47,11 @@ class ProductDetailsScreen extends StatelessWidget {
               const SizedBox(width: 8),
             ],
             flexibleSpace: FlexibleSpaceBar(
-              background: Image.asset(
-                product.imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  color: AppColors.primary.withValues(alpha: 0.08),
-                  child: const Center(
-                    child: Icon(Icons.image_outlined,
-                        size: 80, color: AppColors.primary),
-                  ),
-                ),
+              background: AppNetworkImage(
+                imageUrl: product.imageUrl,
+                width: double.infinity,
+                height: double.infinity,
+                borderRadius: 0,
               ),
             ),
           ),

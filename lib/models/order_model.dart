@@ -30,7 +30,7 @@ class OrderModel {
     OrderModel(
       id: 'ORD-1001',
       customerId: '2',
-      customerName: 'John Doe',
+      customerName: 'Radhu',
       customerAddress: '123 Main St, City',
       items: [
         OrderItem(productName: 'Fresh Apples', quantity: 2, price: 120),
@@ -51,12 +51,12 @@ class OrderModel {
       totalAmount: 420,
       status: 'Accepted',
       deliveryPersonId: '4',
-      deliveryPersonName: 'Ravi Kumar',
+      deliveryPersonName: 'Radhu',
     ),
     OrderModel(
       id: 'ORD-1003',
       customerId: '2',
-      customerName: 'John Doe',
+      customerName: 'Radhu',
       customerAddress: '123 Main St, City',
       items: [
         OrderItem(productName: 'Orange Juice', quantity: 3, price: 110),
@@ -78,7 +78,7 @@ class OrderModel {
       totalAmount: 140,
       status: 'Delivered',
       deliveryPersonId: '4',
-      deliveryPersonName: 'Ravi Kumar',
+      deliveryPersonName: 'Radhu',
     ),
   ];
 }

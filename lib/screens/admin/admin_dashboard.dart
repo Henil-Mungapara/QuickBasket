@@ -22,7 +22,7 @@ class AdminDashboard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ── Welcome Header ──────────────────────────────
-            const Text('Welcome, Admin 👋',
+            const Text('Welcome, Radhu 👋',
                 style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w700,

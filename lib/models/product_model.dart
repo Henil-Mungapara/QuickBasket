@@ -8,6 +8,8 @@ class ProductModel {
   final String description;
   final String imageUrl;
 
+  final DateTime? createdAt;
+
   ProductModel({
     required this.id,
     required this.name,
@@ -16,9 +18,33 @@ class ProductModel {
     required this.stock,
     this.description = '',
     this.imageUrl = '',
+    this.createdAt,
   });
 
-  // TODO: Add fromJson / toJson when Firebase Firestore is integrated.
+  factory ProductModel.fromJson(String id, Map<String, dynamic> json) {
+    return ProductModel(
+      id: id,
+      name: json['name'] ?? '',
+      categoryId: json['categoryId'] ?? '',
+      price: (json['price'] ?? 0).toDouble(),
+      stock: json['stock'] ?? 0,
+      description: json['description'] ?? '',
+      imageUrl: json['imageUrl'] ?? '',
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'].toString()) : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'categoryId': categoryId,
+      'price': price,
+      'stock': stock,
+      'description': description,
+      'imageUrl': imageUrl,
+      'createdAt': createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
+    };
+  }
 
   static List<ProductModel> dummyProducts = [
     // ── Fruits (categoryId: '1') ──────────────────────────

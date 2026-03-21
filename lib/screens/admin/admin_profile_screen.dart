@@ -37,10 +37,10 @@ class AdminProfileScreen extends StatelessWidget {
                   _sectionTitle('Personal Information'),
                   const SizedBox(height: 12),
                   _infoCard([
-                    _infoRow(Icons.person_outline, 'Full Name', 'Admin User'),
+                    _infoRow(Icons.person_outline, 'Full Name', 'Radhu'),
                     _divider(),
                     _infoRow(Icons.email_outlined, 'Email',
-                        'admin@quickbasket.com'),
+                        'radhu@quickbasket.com'),
                     _divider(),
                     _infoRow(
                         Icons.phone_outlined, 'Phone', '+91 98765 43210'),
@@ -188,7 +188,7 @@ class AdminProfileScreen extends StatelessWidget {
           right: 0,
           child: Column(
             children: [
-              const Text('Admin User',
+              const Text('Radhu',
                   style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
