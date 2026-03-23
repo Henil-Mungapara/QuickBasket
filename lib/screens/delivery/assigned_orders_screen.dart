@@ -2,235 +2,141 @@ import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../helpers/ui_helper.dart';
 import '../../models/order_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// Assigned Orders Screen — accept and change delivery status.
-class AssignedOrdersScreen extends StatefulWidget {
+/// Assigned Orders Screen for Delivery Personnel
+class AssignedOrdersScreen extends StatelessWidget {
   const AssignedOrdersScreen({super.key});
-
-  @override
-  State<AssignedOrdersScreen> createState() => _AssignedOrdersScreenState();
-}
-
-class _AssignedOrdersScreenState extends State<AssignedOrdersScreen> {
-  // TODO: Fetch orders assigned to current delivery person from Firestore
-  final List<OrderModel> _orders = List.from(OrderModel.dummyOrders);
-  final _statuses = ['Pending', 'Accepted', 'Out for Delivery', 'Delivered'];
-
-  Color _statusColor(String status) {
-    switch (status) {
-      case 'Pending':
-        return AppColors.pending;
-      case 'Accepted':
-        return AppColors.accepted;
-      case 'Out for Delivery':
-        return AppColors.outForDelivery;
-      case 'Delivered':
-        return AppColors.delivered;
-      default:
-        return AppColors.textSecondary;
-    }
-  }
-
-  int _nextStatusIndex(String current) {
-    final idx = _statuses.indexOf(current);
-    return idx < _statuses.length - 1 ? idx + 1 : idx;
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        title: const Text('Assigned Orders'),
         backgroundColor: AppColors.primary,
-        elevation: 0,
-        title: const Text('Assigned Orders',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+        foregroundColor: Colors.white,
       ),
-      body: _orders.isEmpty
-          ? const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.assignment_outlined,
-                      size: 64, color: AppColors.divider),
-                  SizedBox(height: 12),
-                  Text('No assigned orders',
-                      style: TextStyle(color: AppColors.textSecondary)),
-                ],
-              ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _orders.length,
-              itemBuilder: (ctx, i) {
-                final o = _orders[i];
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 14),
-                  padding: const EdgeInsets.all(16),
+      body: StreamBuilder<QuerySnapshot>(
+        // For now, fetching all accepted/out-for-delivery orders.
+        // Once full delivery assignment logic is built, filter by deliveryPersonId.
+        stream: FirebaseFirestore.instance
+            .collection('orders')
+            .where('status', whereIn: ['Accepted', 'Out for Delivery'])
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+          }
+          final docs = snapshot.data?.docs ?? [];
+          if (docs.isEmpty) {
+            return const Center(
+              child: Text('No orders assigned to you currently.',
+                  style: TextStyle(fontSize: 16, color: AppColors.textSecondary)),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: docs.length,
+            itemBuilder: (context, index) {
+              final data = docs[index].data() as Map<String, dynamic>;
+              final order = OrderModel.fromJson(docs[index].id, data);
+              return _DeliveryOrderCard(order: order);
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _DeliveryOrderCard extends StatelessWidget {
+  final OrderModel order;
+  const _DeliveryOrderCard({required this.order});
+
+  Future<void> _updateStatus(BuildContext context, String newStatus) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('orders')
+          .doc(order.id)
+          .update({'status': newStatus});
+      if (!context.mounted) return;
+      UIHelper.showSnackBar(context, 'Order marked as $newStatus');
+    } catch (e) {
+      if (!context.mounted) return;
+      UIHelper.showSnackBar(context, 'Failed to update status', isError: true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 3,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Order #${order.id.substring(0, 8).toUpperCase()}',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                          color: AppColors.shadow,
-                          blurRadius: 8,
-                          offset: const Offset(0, 2)),
-                    ],
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
                   ),
+                  child: Text(order.status,
+                      style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.location_on, color: AppColors.accent, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ── Header ───────────────────────────
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(o.id,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 15,
-                                  color: AppColors.textPrimary)),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color:
-                                  _statusColor(o.status).withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(o.status,
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: _statusColor(o.status))),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-
-                      // ── Customer info ────────────────────
-                      Row(
-                        children: [
-                          const Icon(Icons.person_outline,
-                              size: 16, color: AppColors.textSecondary),
-                          const SizedBox(width: 6),
-                          Text(o.customerName,
-                              style: const TextStyle(
-                                  fontSize: 13,
-                                  color: AppColors.textSecondary)),
-                        ],
-                      ),
+                      Text(order.customerName, style: const TextStyle(fontWeight: FontWeight.w600)),
                       const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(Icons.location_on_outlined,
-                              size: 16, color: AppColors.textSecondary),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(o.customerAddress,
-                                style: const TextStyle(
-                                    fontSize: 12,
-                                    color: AppColors.textSecondary)),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-
-                      // ── Items ────────────────────────────
-                      ...o.items.map((item) => Padding(
-                            padding: const EdgeInsets.only(bottom: 2),
-                            child: Text(
-                                '• ${item.productName} × ${item.quantity}',
-                                style: const TextStyle(
-                                    fontSize: 13,
-                                    color: AppColors.textPrimary)),
-                          )),
-                      const Divider(height: 20),
-
-                      // ── Actions ──────────────────────────
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                              'Total: ₹${o.totalAmount.toStringAsFixed(0)}',
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 16,
-                                  color: AppColors.primary)),
-                          Row(
-                            children: [
-                              if (o.status == 'Pending')
-                                _actionButton(
-                                  label: 'Accept',
-                                  color: AppColors.accepted,
-                                  icon: Icons.check,
-                                  onTap: () {
-                                    setState(() {
-                                      // TODO: Update in Firestore
-                                      o.status = 'Accepted';
-                                    });
-                                    UIHelper.showSnackBar(
-                                        context, 'Order accepted');
-                                  },
-                                ),
-                              if (o.status != 'Delivered') ...[
-                                const SizedBox(width: 8),
-                                _actionButton(
-                                  label: _statuses[_nextStatusIndex(o.status)],
-                                  color: _statusColor(
-                                      _statuses[_nextStatusIndex(o.status)]),
-                                  icon: Icons.arrow_forward,
-                                  onTap: () {
-                                    setState(() {
-                                      // TODO: Update in Firestore
-                                      o.status =
-                                          _statuses[_nextStatusIndex(o.status)];
-                                    });
-                                    UIHelper.showSnackBar(context,
-                                        'Status updated to ${o.status}');
-                                  },
-                                ),
-                              ],
-                            ],
-                          ),
-                        ],
-                      ),
+                      Text(order.customerAddress, style: const TextStyle(color: AppColors.textSecondary)),
                     ],
                   ),
-                );
-              },
+                ),
+              ],
             ),
-    );
-  }
-
-  Widget _actionButton({
-    required String label,
-    required Color color,
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: color),
-            const SizedBox(width: 4),
-            Text(label,
-                style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: color)),
+            const Divider(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                UIHelper.customTextButton(
+                  text: 'View Details',
+                  onPressed: () {},
+                ),
+                if (order.status == 'Accepted')
+                  UIHelper.customButton(
+                    text: 'Start Delivery',
+                    width: 140,
+                    onPressed: () => _updateStatus(context, 'Out for Delivery'),
+                  )
+                else if (order.status == 'Out for Delivery')
+                  UIHelper.customButton(
+                    text: 'Mark Delivered',
+                    width: 150,
+                    backgroundColor: AppColors.success,
+                    onPressed: () => _updateStatus(context, 'Delivered'),
+                  ),
+              ],
+            ),
           ],
         ),
       ),

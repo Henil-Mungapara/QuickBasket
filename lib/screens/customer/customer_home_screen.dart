@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../models/category_model.dart';
 import '../../models/product_model.dart';
+import '../../services/firestore_service.dart';
 import '../../widgets/app_network_image.dart';
+import '../../helpers/ui_helper.dart';
 import 'cart_screen.dart';
 import 'category_products_screen.dart';
 import 'customer_orders_screen.dart';
@@ -201,15 +203,21 @@ class _HomeContentState extends State<_HomeContent> {
             children: [
               _headerIconButton(
                 Icons.notifications_none_rounded,
-                badgeCount: 2,
+                badgeCount: 2, // Dummy static badge
                 onTap: () {},
               ),
               const SizedBox(width: 4),
-              _headerIconButton(
-                Icons.shopping_cart_outlined,
-                badgeCount: 3,
-                onTap: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const CartScreen())),
+              StreamBuilder<int>(
+                stream: FirestoreService.cartCountStream(),
+                builder: (context, snapshot) {
+                  final count = snapshot.data ?? 0;
+                  return _headerIconButton(
+                    Icons.shopping_cart_outlined,
+                    badgeCount: count,
+                    onTap: () => Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const CartScreen())),
+                  );
+                },
               ),
             ],
           ),
@@ -423,7 +431,7 @@ class _HomeContentState extends State<_HomeContent> {
   // ── Featured Products (first 6) ──────────────────────────────────────
   Widget _buildFeaturedProducts() {
     return SizedBox(
-      height: 220,
+      height: 240,
       child: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('products')
@@ -498,7 +506,7 @@ class _HomeContentState extends State<_HomeContent> {
               crossAxisCount: 2,
               mainAxisSpacing: 14,
               crossAxisSpacing: 14,
-              childAspectRatio: 0.68,
+              childAspectRatio: 0.65,
             ),
             delegate: SliverChildBuilderDelegate(
               (ctx, i) {
@@ -557,10 +565,10 @@ class _FeaturedProductCard extends StatelessWidget {
               flex: 3,
               child: Container(
                 width: double.infinity,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.06),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
                   borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(18)),
+                      BorderRadius.vertical(top: Radius.circular(18)),
                 ),
                 child: ClipRRect(
                   borderRadius:
@@ -588,6 +596,14 @@ class _FeaturedProductCard extends StatelessWidget {
                           fontSize: 14,
                           color: AppColors.textPrimary)),
                   const SizedBox(height: 2),
+                  if (product.description.isNotEmpty) ...[
+                    Text(product.description,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontSize: 11, color: AppColors.textSecondary)),
+                    const SizedBox(height: 4),
+                  ],
                   Text(
                     product.stock > 0 ? 'In Stock' : 'Out of Stock',
                     style: TextStyle(
@@ -599,22 +615,31 @@ class _FeaturedProductCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('₹${product.price.toStringAsFixed(0)}',
                           style: const TextStyle(
                               fontWeight: FontWeight.w800,
                               fontSize: 17,
                               color: AppColors.primary)),
-                      Container(
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                              colors: [Color(0xFF2ECC71), Color(0xFF27AE60)]),
-                          borderRadius: BorderRadius.circular(9),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () async {
+                          if (product.stock > 0) {
+                            await FirestoreService.addToCart(product);
+                            if (!context.mounted) return;
+                            UIHelper.showSnackBar(context, '${product.name} added to cart');
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(5),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                                colors: [Color(0xFF2ECC71), Color(0xFF27AE60)]),
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                          child: const Icon(Icons.add,
+                              color: Colors.white, size: 18),
                         ),
-                        child: const Icon(Icons.add,
-                            color: Colors.white, size: 18),
                       ),
                     ],
                   ),
@@ -657,16 +682,16 @@ class _ProductGridCard extends StatelessWidget {
               flex: 5,
               child: Container(
                 width: double.infinity,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.05),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
                   borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(18)),
+                      BorderRadius.vertical(top: Radius.circular(18)),
                 ),
                 child: ClipRRect(
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(18)),
                   child: Padding(
-                    padding: const EdgeInsets.all(10),
+                    padding: EdgeInsets.all(10),
                     child: AppNetworkImage(
                       imageUrl: product.imageUrl,
                       width: double.infinity,
@@ -679,43 +704,62 @@ class _ProductGridCard extends StatelessWidget {
             ),
             // ── Info ──────────────────────────────────────────
             Expanded(
-              flex: 3,
+              flex: 4,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Text(product.name,
-                        maxLines: 2,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 13,
                             color: AppColors.textPrimary)),
+                    const SizedBox(height: 4),
+                    if (product.description.isNotEmpty) ...[
+                      Text(product.description,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 11, color: AppColors.textSecondary)),
+                    ],
+                    const SizedBox(height: 8),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text('₹${product.price.toStringAsFixed(0)}',
                             style: const TextStyle(
                                 fontWeight: FontWeight.w800,
                                 fontSize: 16,
                                 color: AppColors.primary)),
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                                colors: [
-                                  Color(0xFF2ECC71),
-                                  Color(0xFF27AE60)
-                                ]),
-                            borderRadius: BorderRadius.circular(8),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () async {
+                            if (product.stock > 0) {
+                              await FirestoreService.addToCart(product);
+                              if (!context.mounted) return;
+                              UIHelper.showSnackBar(context, '${product.name} added to cart');
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFF2ECC71),
+                                    Color(0xFF27AE60)
+                                  ]),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.add,
+                                color: Colors.white, size: 16),
                           ),
-                          child: const Icon(Icons.add,
-                              color: Colors.white, size: 16),
                         ),
                       ],
                     ),
+                    const Spacer(),
                   ],
                 ),
               ),

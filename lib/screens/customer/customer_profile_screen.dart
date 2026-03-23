@@ -1,190 +1,192 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:quickbasket/screens/auth/login_screen.dart';
 import '../../constants/app_colors.dart';
 import '../../helpers/ui_helper.dart';
+import '../../helpers/app_size.dart';
+import '../../services/firestore_service.dart';
+import '../auth/login_screen.dart';
 
-/// Customer Profile Screen — responsive design, no settings section.
+/// Modern Customer Profile Screen with real-time Firestore data
 class CustomerProfileScreen extends StatelessWidget {
   const CustomerProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isWide = screenWidth > 600;
-    final horizontalPad = isWide ? screenWidth * 0.1 : 20.0;
-    final avatarRadius = isWide ? 56.0 : 48.0;
+    // Screen width adjustments
+    final width = AppSize.screenWidth(context);
+    final isTablet = width > 600;
+    final paddingH = isTablet ? width * 0.15 : 20.0;
+    final avatarRadius = isTablet ? 60.0 : 50.0;
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // ── Gradient Header with Avatar ──────────────────
-            _buildProfileHeader(context, avatarRadius),
-            // Spacing for the floating avatar + name
-            SizedBox(height: avatarRadius + 64),
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: FirestoreService.userProfileStream(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+          }
 
-            // ── Personal Info Section ────────────────────────
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: horizontalPad),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _sectionTitle('Personal Information'),
-                  const SizedBox(height: 12),
-                  _infoCard([
-                    _infoRow(Icons.person_outline, 'Full Name', 'Radhu'),
-                    _divider(),
-                    _infoRow(
-                        Icons.email_outlined, 'Email', 'radhu@email.com'),
-                    _divider(),
-                    _infoRow(
-                        Icons.phone_outlined, 'Phone', '+91 98765 43210'),
-                    _divider(),
-                    _infoRow(Icons.location_on_outlined, 'Address',
-                        '123 Main St, City, State'),
-                  ]),
+          final userData = snapshot.data?.data() as Map<String, dynamic>?;
+          final name = userData?['name'] ?? 'Customer';
+          final email = userData?['email'] ?? FirebaseAuth.instance.currentUser?.email ?? '';
+          final phone = userData?['phone'] ?? 'Update your phone number';
+          final address = userData?['address'] ?? 'Update your address';
 
-                  const SizedBox(height: 24),
-
-                  // ── Account Menu Section ─────────────────────
-                  _sectionTitle('Account'),
-                  const SizedBox(height: 12),
-                  _infoCard([
-                    _menuTile(Icons.shopping_bag_outlined, 'My Orders',
-                        onTap: () {}),
-                    _divider(),
-                    _menuTile(Icons.favorite_border, 'Wishlist',
-                        onTap: () {}),
-                    _divider(),
-                    _menuTile(
-                        Icons.location_on_outlined, 'Saved Addresses',
-                        onTap: () {}),
-                    _divider(),
-                    _menuTile(Icons.payment_outlined, 'Payment Methods',
-                        onTap: () {}),
-                  ]),
-
-                  const SizedBox(height: 28),
-
-                  // ── Logout Button ────────────────────────────
-                  SizedBox(
-                    width: double.infinity,
-                    child: UIHelper.customButton(
-                      text: 'Logout',
-                      backgroundColor: AppColors.primary,
-                      onPressed: () async {
-                        try {
-                          await FirebaseAuth.instance.signOut();
-                          if (!context.mounted) return;
-                          UIHelper.showSnackBar(context, 'Logged out successfully');
-                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => LoginScreen()));
-                        } catch (e) {
-                          if (!context.mounted) return;
-                          UIHelper.showSnackBar(context, 'Logout failed: $e', isError: true);
-                        }
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ── Gradient Header ────────────────────────────────────────────────
-  Widget _buildProfileHeader(BuildContext context, double avatarRadius) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        // Gradient background
-        Container(
-          height: 200,
-          width: double.infinity,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppColors.primary, AppColors.secondary],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(32),
-              bottomRight: Radius.circular(32),
-            ),
-          ),
-          child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                // ── HEADER SECTION ─────────────────────────────────────
+                Stack(
+                  clipBehavior: Clip.none,
                   children: [
-                    const SizedBox(width: 48), // Balance spacing
-                    const Spacer(),
-                    const Text('My Profile',
-                        style: TextStyle(
+                    // Gradient background
+                    Container(
+                      height: 200,
+                      width: double.infinity,
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [AppColors.primary, AppColors.secondary],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(32),
+                          bottomRight: Radius.circular(32),
+                        ),
+                      ),
+                      child: SafeArea(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Row(
+                            children: [
+                              const SizedBox(width: 48), // Balance spacing
+                              const Spacer(),
+                              const Text('My Profile',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w600)),
+                              const Spacer(),
+                              const SizedBox(width: 48), // Balance spacing
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Floating avatar
+                    Positioned(
+                      bottom: -avatarRadius,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(5),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
                             color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600)),
-                    const Spacer(),
-                    const SizedBox(width: 48), // Balance spacing
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withValues(alpha: 0.3),
+                                blurRadius: 16,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
+                          ),
+                          child: CircleAvatar(
+                            radius: avatarRadius,
+                            backgroundColor: AppColors.primary,
+                            child: Icon(Icons.person,
+                                size: avatarRadius, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Name & email below avatar
+                    Positioned(
+                      bottom: -(avatarRadius + 58),
+                      left: 0,
+                      right: 0,
+                      child: Column(
+                        children: [
+                          Text(name,
+                              style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary)),
+                          const SizedBox(height: 4),
+                          Text(email,
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.textSecondary.withValues(alpha: 0.8))),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
-              ),
-          ),
-        ),
-        // Floating avatar
-        Positioned(
-          bottom: -avatarRadius,
-          left: 0,
-          right: 0,
-          child: Center(
-            child: Container(
-              padding: const EdgeInsets.all(5),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
+                
+                SizedBox(height: avatarRadius + 65), // Spacing for avatar & text
+
+                // ── BODY CONTENT ───────────────────────────────────────
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: paddingH),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _sectionTitle('Personal Info'),
+                      const SizedBox(height: 12),
+                      _infoCard([
+                        _infoRow(Icons.phone_outlined, 'Phone Number', phone),
+                        _divider(),
+                        _infoRow(Icons.location_on_outlined, 'Delivery Address', address),
+                      ]),
+                      const SizedBox(height: 24),
+
+                      _sectionTitle('Account'),
+                      const SizedBox(height: 12),
+                      _infoCard([
+                        // Re-using the built-in tabs, so these just trigger UI state
+                        // or show coming soon for settings.
+                        _menuTile(Icons.shopping_bag_outlined, 'My Orders', onTap: () {}),
+                        _divider(),
+                        _menuTile(Icons.favorite_border, 'Wishlist', onTap: () {}),
+                        _divider(),
+                        _menuTile(Icons.settings_outlined, 'Settings', onTap: () {
+                          UIHelper.showSnackBar(context, 'Settings coming soon!');
+                        }),
+                      ]),
+                      const SizedBox(height: 32),
+
+                      // Logout button
+                      SizedBox(
+                        width: double.infinity,
+                        child: UIHelper.customButton(
+                          text: 'Logout',
+                          backgroundColor: AppColors.primary,
+                          onPressed: () async {
+                            try {
+                              await FirebaseAuth.instance.signOut();
+                              if (!context.mounted) return;
+                              UIHelper.showSnackBar(context, 'Logged out successfully');
+                              Navigator.pushReplacement(
+                                  context, MaterialPageRoute(builder: (_) => LoginScreen()));
+                            } catch (e) {
+                              if (!context.mounted) return;
+                              UIHelper.showSnackBar(context, 'Logout failed: $e', isError: true);
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                    ],
                   ),
-                ],
-              ),
-              child: CircleAvatar(
-                radius: avatarRadius,
-                backgroundColor: AppColors.primary,
-                child:
-                    Icon(Icons.person, size: avatarRadius, color: Colors.white),
-              ),
+                ),
+              ],
             ),
-          ),
-        ),
-        // Name & email below avatar
-        Positioned(
-          bottom: -(avatarRadius + 58),
-          left: 0,
-          right: 0,
-          child: Column(
-            children: [
-              const Text('Radhu',
-                  style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary)),
-              const SizedBox(height: 4),
-              Text('radhu@email.com',
-                  style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary.withValues(alpha: 0.8))),
-            ],
-          ),
-        ),
-      ],
+          );
+        },
+      ),
     );
   }
 
@@ -242,8 +244,10 @@ class CustomerProfileScreen extends StatelessWidget {
                         color: AppColors.textSecondary)),
                 const SizedBox(height: 2),
                 Text(value,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                        fontSize: 15,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textPrimary)),
               ],
@@ -254,25 +258,15 @@ class CustomerProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _menuTile(IconData icon, String title,
-      {required VoidCallback onTap}) {
+  Widget _menuTile(IconData icon, String title, {required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         child: Row(
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, color: AppColors.primary, size: 20),
-            ),
-            const SizedBox(width: 14),
+            Icon(icon, color: AppColors.textSecondary, size: 22),
+            const SizedBox(width: 16),
             Expanded(
               child: Text(title,
                   style: const TextStyle(
@@ -280,8 +274,8 @@ class CustomerProfileScreen extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary)),
             ),
-            const Icon(Icons.chevron_right_rounded,
-                color: AppColors.textSecondary, size: 22),
+            Icon(Icons.arrow_forward_ios_rounded,
+                color: AppColors.textSecondary.withValues(alpha: 0.5), size: 16),
           ],
         ),
       ),
@@ -290,9 +284,11 @@ class CustomerProfileScreen extends StatelessWidget {
 
   Widget _divider() {
     return Divider(
-        height: 1,
-        thickness: 0.8,
-        indent: 70,
-        color: AppColors.divider.withValues(alpha: 0.6));
+      height: 1,
+      thickness: 1,
+      color: AppColors.background.withValues(alpha: 0.5),
+      indent: 52,
+      endIndent: 16,
+    );
   }
 }

@@ -1,21 +1,15 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../models/order_model.dart';
+import 'package:intl/intl.dart';
 
-/// Delivery Dashboard — assigned orders and completed count.
+/// Delivery Dashboard — assigned orders and completed count from Firestore.
 class DeliveryDashboard extends StatelessWidget {
   const DeliveryDashboard({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Fetch orders assigned to current delivery person from Firestore
-    final assignedOrders = OrderModel.dummyOrders
-        .where((o) => o.status != 'Delivered')
-        .toList();
-    final completedOrders = OrderModel.dummyOrders
-        .where((o) => o.status == 'Delivered')
-        .toList();
-
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -37,76 +31,95 @@ class DeliveryDashboard extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Welcome ─────────────────────────────────
-            const Text('Hello, Radhu 👋',
-                style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary)),
-            const SizedBox(height: 4),
-            const Text('Here are your deliveries today',
-                style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
-            const SizedBox(height: 24),
+      body: StreamBuilder<QuerySnapshot>(
+        // FIXME: Once auth is linked to delivery person, filter by deliveryPersonId
+        stream: FirebaseFirestore.instance
+            .collection('orders')
+            .where('status', whereIn: ['Accepted', 'Out for Delivery', 'Delivered'])
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+          }
+          
+          final docs = snapshot.data?.docs ?? [];
+          final allOrders = docs.map((doc) => OrderModel.fromJson(doc.id, doc.data() as Map<String, dynamic>)).toList();
+          
+          final assignedOrders = allOrders.where((o) => o.status != 'Delivered').toList();
+          final completedOrders = allOrders.where((o) => o.status == 'Delivered').toList();
 
-            // ── Stats Row ───────────────────────────────
-            Row(
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _statCard('Assigned', '${assignedOrders.length}',
-                    Icons.assignment_outlined, AppColors.accepted),
-                const SizedBox(width: 14),
-                _statCard('Completed', '${completedOrders.length}',
-                    Icons.check_circle_outline, AppColors.delivered),
-              ],
-            ),
-            const SizedBox(height: 28),
-
-            // ── Button to Assigned Orders ───────────────
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Recent Assigned Orders',
+                // ── Welcome ─────────────────────────────────
+                const Text('Hello, Delivery Partner 👋',
                     style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary)),
-                TextButton(
-                  onPressed: () =>
-                      Navigator.pushNamed(context, '/delivery-assigned-orders'),
-                  child: const Text('View All',
-                      style: TextStyle(color: AppColors.primary)),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
+                const SizedBox(height: 4),
+                const Text('Here are your deliveries today',
+                    style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                const SizedBox(height: 24),
 
-            // ── Recent Orders ───────────────────────────
-            if (assignedOrders.isEmpty)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(40),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Column(
+                // ── Stats Row ───────────────────────────────
+                Row(
                   children: [
-                    Icon(Icons.assignment_turned_in_outlined,
-                        size: 48, color: AppColors.divider),
-                    SizedBox(height: 12),
-                    Text('No assigned orders',
-                        style: TextStyle(color: AppColors.textSecondary)),
+                    _statCard('Assigned', '${assignedOrders.length}',
+                        Icons.assignment_outlined, AppColors.accepted),
+                    const SizedBox(width: 14),
+                    _statCard('Completed', '${completedOrders.length}',
+                        Icons.check_circle_outline, AppColors.delivered),
                   ],
                 ),
-              )
-            else
-              ...assignedOrders.take(3).map((o) => _orderCard(context, o)),
-          ],
-        ),
+                const SizedBox(height: 28),
+
+                // ── Button to Assigned Orders ───────────────
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Recent Assigned Orders',
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary)),
+                    TextButton(
+                      onPressed: () =>
+                          Navigator.pushNamed(context, '/delivery-assigned-orders'),
+                      child: const Text('View All',
+                          style: TextStyle(color: AppColors.primary)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+
+                // ── Recent Orders ───────────────────────────
+                if (assignedOrders.isEmpty)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(40),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Column(
+                      children: [
+                        Icon(Icons.assignment_turned_in_outlined,
+                            size: 48, color: AppColors.divider),
+                        SizedBox(height: 12),
+                        Text('No assigned orders',
+                            style: TextStyle(color: AppColors.textSecondary)),
+                      ],
+                    ),
+                  )
+                else
+                  ...assignedOrders.take(3).map((o) => _orderCard(context, o)),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -173,7 +186,7 @@ class DeliveryDashboard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(o.id,
+              Text('#${o.id.substring(0, 8).toUpperCase()}',
                   style: const TextStyle(
                       fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
               Container(

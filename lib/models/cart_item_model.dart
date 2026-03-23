@@ -16,11 +16,37 @@ class CartItemModel {
 
   double get total => price * quantity;
 
-  // TODO: Add fromJson / toJson when Firebase Firestore is integrated.
+  factory CartItemModel.fromJson(String id, Map<String, dynamic> json) {
+    double parsedPrice = 0.0;
+    if (json['price'] is num) {
+      parsedPrice = (json['price'] as num).toDouble();
+    } else if (json['price'] is String) {
+      parsedPrice = double.tryParse(json['price']) ?? 0.0;
+    }
 
-  static List<CartItemModel> dummyCart = [
-    CartItemModel(productId: '1', productName: 'Fresh Mango', price: 120, quantity: 2, imageUrl: 'assets/images/mango.png'),
-    CartItemModel(productId: '5', productName: 'Full Cream Milk', price: 65, quantity: 1, imageUrl: 'assets/images/milks.png'),
-    CartItemModel(productId: '9', productName: 'Besan (Gram Flour)', price: 45, quantity: 3, imageUrl: 'assets/images/besan.png'),
-  ];
+    int parsedQty = 1;
+    if (json['quantity'] is num) {
+      parsedQty = (json['quantity'] as num).toInt();
+    } else if (json['quantity'] is String) {
+      parsedQty = int.tryParse(json['quantity']) ?? 1;
+    }
+
+    return CartItemModel(
+      productId: id,
+      productName: json['name']?.toString() ?? '',
+      price: parsedPrice,
+      quantity: parsedQty,
+      imageUrl: json['imageUrl']?.toString() ?? '',
+    );
+  }
+
+  /// Convert to Firestore map.
+  Map<String, dynamic> toJson() {
+    return {
+      'name': productName,
+      'price': price,
+      'quantity': quantity,
+      'imageUrl': imageUrl,
+    };
+  }
 }

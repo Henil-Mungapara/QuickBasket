@@ -96,7 +96,10 @@ class _ManageCategoriesScreenState extends State<ManageCategoriesScreen> {
                   onPressed: () => Navigator.pop(ctx),
                   child: const Text('Cancel',
                       style: TextStyle(color: AppColors.textSecondary))),
-            if (!isLoading)
+            if (isLoading)
+              const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary))
+            else
               ElevatedButton(
                 onPressed: () async {
                   if (controller.text.trim().isEmpty) {

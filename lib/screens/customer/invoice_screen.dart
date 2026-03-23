@@ -5,13 +5,13 @@ import '../../models/order_model.dart';
 
 /// Invoice Screen — view, download, and print invoice.
 class InvoiceScreen extends StatelessWidget {
-  final OrderModel? order;
-  const InvoiceScreen({super.key, this.order});
+  final OrderModel order;
+  const InvoiceScreen({super.key, required this.order});
 
   @override
   Widget build(BuildContext context) {
     // Use dummy if no argument passed
-    final o = order ?? OrderModel.dummyOrders.first;
+    final o = order;
 
     return Scaffold(
       backgroundColor: AppColors.background,

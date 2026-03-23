@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../models/category_model.dart';
 import '../../models/product_model.dart';
+import '../../services/firestore_service.dart';
 import '../../widgets/app_network_image.dart';
+import '../../helpers/ui_helper.dart';
 import 'product_details_screen.dart';
 
 /// Category Products Screen — products filtered by category from Firestore.
@@ -102,7 +104,7 @@ class CategoryProductsScreen extends StatelessWidget {
               crossAxisCount: 2,
               mainAxisSpacing: 14,
               crossAxisSpacing: 14,
-              childAspectRatio: 0.68,
+              childAspectRatio: 0.65,
             ),
             itemCount: docs.length,
             itemBuilder: (ctx, i) {
@@ -132,9 +134,9 @@ class CategoryProductsScreen extends StatelessWidget {
                         flex: 5,
                         child: Container(
                           width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.05),
-                            borderRadius: const BorderRadius.vertical(
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.vertical(
                                 top: Radius.circular(18)),
                           ),
                           child: ClipRRect(
@@ -159,39 +161,55 @@ class CategoryProductsScreen extends StatelessWidget {
                           padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               Text(p.name,
-                                  maxLines: 2,
+                                  maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 13,
                                       color: AppColors.textPrimary)),
+                              const SizedBox(height: 4),
+                              if (p.description.isNotEmpty) ...[
+                                Text(p.description,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                        fontSize: 11, color: AppColors.textSecondary)),
+                              ],
+                              const SizedBox(height: 8),
                               Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text('₹${p.price.toStringAsFixed(0)}',
                                       style: const TextStyle(
                                           fontWeight: FontWeight.w800,
                                           fontSize: 16,
                                           color: AppColors.primary)),
-                                  Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                          colors: [
-                                            Color(0xFF2ECC71),
-                                            Color(0xFF27AE60)
-                                          ]),
-                                      borderRadius: BorderRadius.circular(8),
+                                  const SizedBox(width: 8),
+                                  GestureDetector(
+                                    onTap: () async {
+                                      await FirestoreService.addToCart(p);
+                                      if (!context.mounted) return;
+                                      UIHelper.showSnackBar(context, '${p.name} added to cart');
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(
+                                            colors: [
+                                              Color(0xFF2ECC71),
+                                              Color(0xFF27AE60)
+                                            ]),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(Icons.add,
+                                          color: Colors.white, size: 16),
                                     ),
-                                    child: const Icon(Icons.add,
-                                        color: Colors.white, size: 16),
                                   ),
                                 ],
                               ),
+                              const Spacer(),
                             ],
                           ),
                         ),
