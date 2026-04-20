@@ -111,6 +111,35 @@ class _HomeContent extends StatefulWidget {
 
 class _HomeContentState extends State<_HomeContent> {
   final _searchCtrl = TextEditingController();
+  String _searchQuery = '';
+  Map<String, String> _categoryMap = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // Cache categories for fast search mapping
+    FirebaseFirestore.instance.collection('categories').get().then((snap) {
+      final map = <String, String>{};
+      for (var doc in snap.docs) {
+        final data = doc.data();
+        map[doc.id] = (data['name'] ?? '').toString().toLowerCase();
+      }
+      if (mounted) setState(() => _categoryMap = map);
+    });
+
+    // Listen to search bar changes
+    _searchCtrl.addListener(() {
+      setState(() {
+        _searchQuery = _searchCtrl.text.trim().toLowerCase();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -129,22 +158,36 @@ class _HomeContentState extends State<_HomeContent> {
             ),
           ),
 
-          // ── Categories ─────────────────────────────────────
-          SliverToBoxAdapter(
-            child: _sectionHeader('Shop by Category', topPad: 20),
-          ),
-          SliverToBoxAdapter(child: _buildCategoryList()),
+          if (_searchQuery.isEmpty) ...[
+            // ── Categories ─────────────────────────────────────
+            SliverToBoxAdapter(
+              child: _sectionHeader('Shop by Category', topPad: 20),
+            ),
+            SliverToBoxAdapter(child: _buildCategoryList()),
 
-          // ── Featured Products ──────────────────────────────
-          SliverToBoxAdapter(
-            child: _sectionHeader('Featured Products', topPad: 24),
-          ),
-          SliverToBoxAdapter(child: _buildFeaturedProducts()),
+            // ── Featured Products ──────────────────────────────
+            SliverToBoxAdapter(
+              child: _sectionHeader('Featured Products', topPad: 24),
+            ),
+            SliverToBoxAdapter(child: _buildFeaturedProducts()),
 
-          // ── All Products ───────────────────────────────────
-          SliverToBoxAdapter(
-            child: _sectionHeader('All Products', topPad: 24),
-          ),
+            // ── All Products ───────────────────────────────────
+            SliverToBoxAdapter(
+              child: _sectionHeader('All Products', topPad: 24),
+            ),
+          ] else ...[
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 20, right: 20, top: 24, bottom: 12),
+                child: Text('Search Results',
+                    style: const TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary)),
+              ),
+            ),
+          ],
+
           _buildProductGrid(),
 
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
@@ -490,12 +533,26 @@ class _HomeContentState extends State<_HomeContent> {
           )));
         }
         final docs = snap.data?.docs ?? [];
-        if (docs.isEmpty) {
+        
+        final filteredDocs = docs.where((doc) {
+          if (_searchQuery.isEmpty) return true;
+          final data = doc.data() as Map<String, dynamic>;
+          final p = ProductModel.fromJson(doc.id, data);
+          final pName = p.name.toLowerCase();
+          final pDesc = p.description.toLowerCase();
+          final catName = _categoryMap[p.categoryId] ?? '';
+          
+          return pName.contains(_searchQuery) || 
+                 catName.contains(_searchQuery) || 
+                 pDesc.contains(_searchQuery);
+        }).toList();
+
+        if (filteredDocs.isEmpty) {
           return const SliverToBoxAdapter(
               child: Center(
                   child: Padding(
             padding: EdgeInsets.all(32),
-            child: Text('No products',
+            child: Text('No matching products found',
                 style: TextStyle(color: AppColors.textSecondary)),
           )));
         }
@@ -510,8 +567,8 @@ class _HomeContentState extends State<_HomeContent> {
             ),
             delegate: SliverChildBuilderDelegate(
               (ctx, i) {
-                final data = docs[i].data() as Map<String, dynamic>;
-                final p = ProductModel.fromJson(docs[i].id, data);
+                final data = filteredDocs[i].data() as Map<String, dynamic>;
+                final p = ProductModel.fromJson(filteredDocs[i].id, data);
                 return _ProductGridCard(
                   product: p,
                   onTap: () => Navigator.push(
@@ -521,7 +578,7 @@ class _HomeContentState extends State<_HomeContent> {
                               ProductDetailsScreen(product: p))),
                 );
               },
-              childCount: docs.length,
+              childCount: filteredDocs.length,
             ),
           ),
         );

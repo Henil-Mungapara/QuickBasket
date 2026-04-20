@@ -43,6 +43,7 @@ class CartItemModel {
   /// Convert to Firestore map.
   Map<String, dynamic> toJson() {
     return {
+      'productId': productId,
       'name': productName,
       'price': price,
       'quantity': quantity,

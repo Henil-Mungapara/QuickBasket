@@ -1,0 +1,16 @@
+Analyzing quickbasket...                                        
+
+  error - Expected to find ']' - lib\screens\admin\admin_profile_screen.dart:131:11 - expected_token
+  error - Expected to find ')' - lib\screens\admin\admin_profile_screen.dart:131:12 - expected_token
+   info - Statements in an if should be enclosed in a block - lib\screens\admin\manage_orders_screen.dart:77:36 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\admin\manage_orders_screen.dart:78:42 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\admin\manage_orders_screen.dart:79:50 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\admin\manage_orders_screen.dart:80:10 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\auth\login_screen.dart:225:27 - curly_braces_in_flow_control_structures
+   info - Don't use 'BuildContext's across async gaps - lib\screens\auth\registration_screen.dart:81:29 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\screens\auth\registration_screen.dart:84:9 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\screens\auth\registration_screen.dart:98:29 - use_build_context_synchronously
+   info - Statements in an if should be enclosed in a block - lib\screens\auth\registration_screen.dart:213:25 - curly_braces_in_flow_control_structures
+   info - The parameter name 'sum' matches a visible type name - lib\screens\customer\cart_screen.dart:94:42 - avoid_types_as_parameter_names
+warning - Unused import: 'package:intl/intl.dart' - lib\screens\delivery\delivery_dashboard.dart:5:8 - unused_import
+

@@ -34,6 +34,7 @@ class QuickBasketApp extends StatelessWidget {
         ),
         fontFamily: 'Roboto',
         appBarTheme: const AppBarTheme(
+          centerTitle: true,
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
           elevation: 0,

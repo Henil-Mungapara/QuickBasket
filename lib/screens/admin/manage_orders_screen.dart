@@ -74,10 +74,15 @@ class _AdminOrderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Color statusColor;
-    if (order.status == 'Pending') statusColor = AppColors.pending;
-    else if (order.status == 'Accepted') statusColor = AppColors.accepted;
-    else if (order.status == 'Out for Delivery') statusColor = AppColors.outForDelivery;
-    else statusColor = AppColors.delivered;
+    if (order.status == 'Pending') {
+      statusColor = AppColors.pending;
+    } else if (order.status == 'Accepted') {
+      statusColor = AppColors.accepted;
+    } else if (order.status == 'Out for Delivery') {
+      statusColor = AppColors.outForDelivery;
+    } else {
+      statusColor = AppColors.delivered;
+    }
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),

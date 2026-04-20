@@ -13,11 +13,11 @@ class FirestoreService {
   static String get _uid => FirebaseAuth.instance.currentUser!.uid;
 
   // ──────────────────────────────────────────────────────────────────────
-  // CART   users/{uid}/cart/{productId}
+  // CART   cart/{uid}/items/{productId}
   // ──────────────────────────────────────────────────────────────────────
 
   static CollectionReference get _cartRef =>
-      _firestore.collection('users').doc(_uid).collection('cart');
+      _firestore.collection('cart').doc(_uid).collection('items');
 
   /// Add product to cart (or increment quantity if already exists).
   static Future<void> addToCart(ProductModel product, {int qty = 1}) async {
@@ -72,11 +72,11 @@ class FirestoreService {
   }
 
   // ──────────────────────────────────────────────────────────────────────
-  // WISHLIST   users/{uid}/wishlist/{productId}
+  // WISHLIST   wishlist/{uid}/items/{productId}
   // ──────────────────────────────────────────────────────────────────────
 
   static CollectionReference get _wishRef =>
-      _firestore.collection('users').doc(_uid).collection('wishlist');
+      _firestore.collection('wishlist').doc(_uid).collection('items');
 
   /// Add product to wishlist.
   static Future<void> addToWishlist(ProductModel product) async {
@@ -156,5 +156,10 @@ class FirestoreService {
   /// Get current user's profile data stream.
   static Stream<DocumentSnapshot> userProfileStream() {
     return _firestore.collection('users').doc(_uid).snapshots();
+  }
+
+  /// Update current user's profile database node.
+  static Future<void> updateUserProfile(Map<String, dynamic> data) async {
+    await _firestore.collection('users').doc(_uid).update(data);
   }
 }

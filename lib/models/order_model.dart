@@ -72,33 +72,42 @@ class OrderModel {
 }
 
 class OrderItem {
+  final String productId;
   final String productName;
   final int quantity;
   final double price;
+  final String imageUrl;
 
   OrderItem({
+    this.productId = '',
     required this.productName,
     required this.quantity,
     required this.price,
+    this.imageUrl = '',
   });
 
   double get total => price * quantity;
 
   /// Create from Firestore map.
   factory OrderItem.fromJson(Map<String, dynamic> json) {
+    // Note: CartItemModel saves product name as 'name'
     return OrderItem(
-      productName: json['productName'] ?? '',
+      productId: json['productId'] ?? '',
+      productName: json['name'] ?? json['productName'] ?? '',
       quantity: (json['quantity'] ?? 1).toInt(),
       price: (json['price'] ?? 0).toDouble(),
+      imageUrl: json['imageUrl'] ?? '',
     );
   }
 
   /// Convert to Firestore map.
   Map<String, dynamic> toJson() {
     return {
-      'productName': productName,
+      'productId': productId,
+      'name': productName, // Match CartItemModel pattern
       'quantity': quantity,
       'price': price,
+      'imageUrl': imageUrl,
     };
   }
 }

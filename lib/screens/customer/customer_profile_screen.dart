@@ -137,9 +137,26 @@ class CustomerProfileScreen extends StatelessWidget {
                       _sectionTitle('Personal Info'),
                       const SizedBox(height: 12),
                       _infoCard([
-                        _infoRow(Icons.phone_outlined, 'Phone Number', phone),
+                        _infoRow(
+                          Icons.person_outline, 
+                          'Full Name', 
+                          name,
+                          onEdit: () => _showEditDialog(context, 'Name', name, 'name'),
+                        ),
                         _divider(),
-                        _infoRow(Icons.location_on_outlined, 'Delivery Address', address),
+                        _infoRow(
+                          Icons.phone_outlined, 
+                          'Phone Number', 
+                          phone,
+                          onEdit: () => _showEditDialog(context, 'Phone Number', phone, 'phone'),
+                        ),
+                        _divider(),
+                        _infoRow(
+                          Icons.location_on_outlined, 
+                          'Delivery Address', 
+                          address,
+                          onEdit: () => _showEditDialog(context, 'Delivery Address', address, 'address'),
+                        ),
                       ]),
                       const SizedBox(height: 24),
 
@@ -192,6 +209,55 @@ class CustomerProfileScreen extends StatelessWidget {
 
   // ── Reusable Helpers ───────────────────────────────────────────────
 
+  Future<void> _showEditDialog(BuildContext context, String title, String currentValue, String fieldKey) async {
+    final ctrl = TextEditingController(text: currentValue);
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Edit $title', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18)),
+        content: TextField(
+          controller: ctrl,
+          decoration: InputDecoration(
+            hintText: 'Enter new $title',
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () async {
+              if (ctrl.text.trim().isNotEmpty) {
+                try {
+                  await FirestoreService.updateUserProfile({fieldKey: ctrl.text.trim()});
+                  if (!ctx.mounted) return;
+                  Navigator.pop(ctx);
+                  UIHelper.showSnackBar(context, '$title updated successfully');
+                } catch (e) {
+                  if (!ctx.mounted) return;
+                  Navigator.pop(ctx);
+                  UIHelper.showSnackBar(context, 'Failed to update $title', isError: true);
+                }
+              } else {
+                Navigator.pop(ctx);
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _sectionTitle(String title) {
     return Text(title,
         style: const TextStyle(
@@ -218,7 +284,7 @@ class CustomerProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _infoRow(IconData icon, String label, String value) {
+  Widget _infoRow(IconData icon, String label, String value, {VoidCallback? onEdit}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
@@ -253,6 +319,12 @@ class CustomerProfileScreen extends StatelessWidget {
               ],
             ),
           ),
+          if (onEdit != null)
+            IconButton(
+              icon: const Icon(Icons.edit_outlined, size: 20, color: AppColors.primary),
+              onPressed: onEdit,
+              splashRadius: 20,
+            ),
         ],
       ),
     );

@@ -91,7 +91,7 @@ class CartScreen extends StatelessWidget {
                   doc.id, doc.data() as Map<String, dynamic>))
               .toList();
           final grandTotal =
-              cartItems.fold<double>(0, (sum, item) => sum + item.total);
+              cartItems.fold<double>(0, (acc, item) => acc + item.total);
 
           return Column(
             children: [
