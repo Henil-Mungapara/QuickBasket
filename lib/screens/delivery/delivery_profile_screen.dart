@@ -1,8 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../helpers/ui_helper.dart';
+import '../../services/firestore_service.dart';
+import '../auth/login_screen.dart';
 
-/// Delivery Profile Screen — responsive design, no settings section.
 class DeliveryProfileScreen extends StatelessWidget {
   const DeliveryProfileScreen({super.key});
 
@@ -15,85 +18,130 @@ class DeliveryProfileScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // ── Gradient Header with Avatar ──────────────────
-            _buildProfileHeader(context, avatarRadius),
-            // Spacing for the floating avatar + name + rating
-            SizedBox(height: avatarRadius + 68),
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: FirestoreService.userProfileStream(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+                child:
+                    CircularProgressIndicator(color: AppColors.primary));
+          }
 
-            // ── Stats Row ────────────────────────────────────
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: horizontalPad),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildStatsRow(),
-                  const SizedBox(height: 24),
+          final userData =
+              snapshot.data?.data() as Map<String, dynamic>?;
+          final name = userData?['name'] ?? 'Delivery Partner';
+          final email = userData?['email'] ??
+              FirebaseAuth.instance.currentUser?.email ??
+              '';
+          final phone = userData?['phone'] ?? 'Update your phone number';
+          final vehicle = userData?['vehicle'] ?? 'Update your vehicle info';
 
-                  // ── Personal Info Section ────────────────────
-                  _sectionTitle('Personal Information'),
-                  const SizedBox(height: 12),
-                  _infoCard([
-                    _infoRow(
-                        Icons.person_outline, 'Full Name', 'Radhu'),
-                    _divider(),
-                    _infoRow(
-                        Icons.email_outlined, 'Email', 'radhu@email.com'),
-                    _divider(),
-                    _infoRow(
-                        Icons.phone_outlined, 'Phone', '+91 98765 43212'),
-                    _divider(),
-                    _infoRow(Icons.two_wheeler_outlined, 'Vehicle',
-                        'Bike — MH 01 AB 1234'),
-                  ]),
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildProfileHeader(context, avatarRadius, name),
+                SizedBox(height: avatarRadius + 68),
 
-                  const SizedBox(height: 24),
+                Padding(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: horizontalPad),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildStatsRow(),
+                      const SizedBox(height: 24),
 
-                  // ── Quick Actions ────────────────────────────
-                  _sectionTitle('Quick Actions'),
-                  const SizedBox(height: 12),
-                  _infoCard([
-                    _menuTile(
-                        Icons.assignment_outlined, 'Assigned Orders',
-                        onTap: () => Navigator.pushNamed(
-                            context, '/delivery-assigned-orders')),
-                    _divider(),
-                    _menuTile(Icons.history, 'Delivery History',
-                        onTap: () {}),
-                    _divider(),
-                    _menuTile(
-                        Icons.account_balance_wallet_outlined, 'Earnings',
-                        onTap: () {}),
-                  ]),
+                      _sectionTitle('Personal Information'),
+                      const SizedBox(height: 12),
+                      _infoCard([
+                        _infoRow(
+                          Icons.person_outline,
+                          'Full Name',
+                          name,
+                          onEdit: () => _showEditDialog(
+                              context, 'Name', name, 'name'),
+                        ),
+                        _divider(),
+                        _infoRow(
+                            Icons.email_outlined, 'Email', email),
+                        _divider(),
+                        _infoRow(
+                          Icons.phone_outlined,
+                          'Phone',
+                          phone,
+                          onEdit: () => _showEditDialog(
+                              context, 'Phone Number', phone, 'phone'),
+                        ),
+                        _divider(),
+                        _infoRow(
+                          Icons.two_wheeler_outlined,
+                          'Vehicle',
+                          vehicle,
+                          onEdit: () => _showEditDialog(
+                              context, 'Vehicle', vehicle, 'vehicle'),
+                        ),
+                      ]),
 
-                  const SizedBox(height: 28),
+                      const SizedBox(height: 24),
 
-                  // ── Logout Button ────────────────────────────
-                  SizedBox(
-                    width: double.infinity,
-                    child: UIHelper.customButton(
-                      text: 'Logout',
-                      backgroundColor: AppColors.primary,
-                      onPressed: () {
-                        // TODO: Firebase sign out
-                        Navigator.pushReplacementNamed(context, '/login');
-                      },
-                    ),
+                      _sectionTitle('Quick Actions'),
+                      const SizedBox(height: 12),
+                      _infoCard([
+                        _menuTile(
+                            Icons.assignment_outlined, 'Assigned Orders',
+                            onTap: () => Navigator.pushNamed(
+                                context, '/delivery-assigned-orders')),
+                        _divider(),
+                        _menuTile(Icons.history, 'Delivery History',
+                            onTap: () {}),
+                        _divider(),
+                        _menuTile(
+                            Icons.account_balance_wallet_outlined,
+                            'Earnings',
+                            onTap: () {}),
+                      ]),
+
+                      const SizedBox(height: 28),
+
+                      SizedBox(
+                        width: double.infinity,
+                        child: UIHelper.customButton(
+                          text: 'Logout',
+                          backgroundColor: AppColors.primary,
+                          onPressed: () async {
+                            try {
+                              await FirebaseAuth.instance.signOut();
+                              if (!context.mounted) return;
+                              UIHelper.showSnackBar(
+                                  context, 'Logged out successfully');
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          const LoginScreen()));
+                            } catch (e) {
+                              if (!context.mounted) return;
+                              UIHelper.showSnackBar(
+                                  context, 'Logout failed: $e',
+                                  isError: true);
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                    ],
                   ),
-                  const SizedBox(height: 32),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  // ── Gradient Header ────────────────────────────────────────────────
-  Widget _buildProfileHeader(BuildContext context, double avatarRadius) {
+  Widget _buildProfileHeader(
+      BuildContext context, double avatarRadius, String name) {
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -128,7 +176,7 @@ class DeliveryProfileScreen extends StatelessWidget {
                           fontSize: 20,
                           fontWeight: FontWeight.w600)),
                   const Spacer(),
-                  const SizedBox(width: 48), // Balance the back button
+                  const SizedBox(width: 48),
                 ],
               ),
             ),
@@ -167,30 +215,24 @@ class DeliveryProfileScreen extends StatelessWidget {
           right: 0,
           child: Column(
             children: [
-              const Text('Radhu',
-                  style: TextStyle(
+              Text(name,
+                  style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary)),
               const SizedBox(height: 4),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.star_rounded,
-                      color: AppColors.accent, size: 18),
-                  const SizedBox(width: 4),
-                  const Text('4.5',
-                      style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary)),
-                  const SizedBox(width: 6),
-                  Text('(128 deliveries)',
-                      style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary
-                              .withValues(alpha: 0.8))),
-                ],
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text('Delivery Partner',
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary)),
               ),
             ],
           ),
@@ -199,7 +241,6 @@ class DeliveryProfileScreen extends StatelessWidget {
     );
   }
 
-  // ── Stats Row ──────────────────────────────────────────────────────
   Widget _buildStatsRow() {
     return Row(
       children: [
@@ -251,7 +292,66 @@ class DeliveryProfileScreen extends StatelessWidget {
     );
   }
 
-  // ── Reusable Helpers ───────────────────────────────────────────────
+  Future<void> _showEditDialog(BuildContext context, String title,
+      String currentValue, String fieldKey) async {
+    final ctrl = TextEditingController(text: currentValue);
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Edit $title',
+            style: const TextStyle(
+                fontWeight: FontWeight.w600, fontSize: 18)),
+        content: TextField(
+          controller: ctrl,
+          decoration: InputDecoration(
+            hintText: 'Enter new $title',
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12)),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel',
+                style: TextStyle(color: AppColors.textSecondary)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () async {
+              if (ctrl.text.trim().isNotEmpty) {
+                try {
+                  await FirestoreService.updateUserProfile(
+                      {fieldKey: ctrl.text.trim()});
+                  if (!ctx.mounted) return;
+                  Navigator.pop(ctx);
+                  UIHelper.showSnackBar(
+                      context, '$title updated successfully');
+                } catch (e) {
+                  if (!ctx.mounted) return;
+                  Navigator.pop(ctx);
+                  UIHelper.showSnackBar(
+                      context, 'Failed to update $title',
+                      isError: true);
+                }
+              } else {
+                Navigator.pop(ctx);
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _sectionTitle(String title) {
     return Text(title,
@@ -279,7 +379,8 @@ class DeliveryProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _infoRow(IconData icon, String label, String value) {
+  Widget _infoRow(IconData icon, String label, String value,
+      {VoidCallback? onEdit}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
@@ -312,6 +413,13 @@ class DeliveryProfileScreen extends StatelessWidget {
               ],
             ),
           ),
+          if (onEdit != null)
+            IconButton(
+              icon: const Icon(Icons.edit_outlined,
+                  size: 20, color: AppColors.primary),
+              onPressed: onEdit,
+              splashRadius: 20,
+            ),
         ],
       ),
     );
@@ -323,7 +431,8 @@ class DeliveryProfileScreen extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
             Container(

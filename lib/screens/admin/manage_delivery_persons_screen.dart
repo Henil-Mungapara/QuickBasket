@@ -195,14 +195,12 @@ class _ManageDeliveryPersonsScreenState
     required String password,
   }) async {
     try {
-      // Create a secondary Firebase app so the admin does NOT get signed out
       FirebaseApp tempApp = await Firebase.initializeApp(
         name: 'tempAuth',
         options: Firebase.app().options,
       );
 
       try {
-        // Create auth account on the secondary app
         UserCredential cred =
             await FirebaseAuth.instanceFor(app: tempApp)
                 .createUserWithEmailAndPassword(
@@ -212,7 +210,6 @@ class _ManageDeliveryPersonsScreenState
 
         String uid = cred.user!.uid;
 
-        // Store user data in Firestore using the auth UID as document ID
         await _firestore.collection('users').doc(uid).set({
           'name': name,
           'email': email,

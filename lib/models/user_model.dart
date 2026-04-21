@@ -1,9 +1,8 @@
-/// Simple User model for Firestore
 class UserModel {
   final String id;
   final String name;
   final String email;
-  final String role; // 'admin' | 'customer' | 'delivery_person'
+  final String role;
   final String phone;
   final String address;
 
@@ -16,7 +15,6 @@ class UserModel {
     this.address = '',
   });
 
-  // Convert Firestore document to UserModel
   factory UserModel.fromJson(String id, Map<String, dynamic> json) {
     return UserModel(
       id: id,
@@ -28,7 +26,6 @@ class UserModel {
     );
   }
 
-  // Convert UserModel to Map for Firestore
   Map<String, dynamic> toJson() {
     return {
       'name': name,

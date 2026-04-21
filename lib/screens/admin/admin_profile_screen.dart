@@ -10,7 +10,6 @@ import 'manage_products_screen.dart';
 import 'manage_delivery_persons_screen.dart';
 import 'manage_orders_screen.dart';
 
-/// Admin Profile Screen — responsive design, no settings section.
 class AdminProfileScreen extends StatelessWidget {
   const AdminProfileScreen({super.key});
 
@@ -27,24 +26,27 @@ class AdminProfileScreen extends StatelessWidget {
         stream: FirestoreService.userProfileStream(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+            return const Center(
+                child:
+                    CircularProgressIndicator(color: AppColors.primary));
           }
-          final userData = snapshot.data?.data() as Map<String, dynamic>?;
+          final userData =
+              snapshot.data?.data() as Map<String, dynamic>?;
           final name = userData?['name'] ?? 'Admin';
-          final email = userData?['email'] ?? FirebaseAuth.instance.currentUser?.email ?? 'radhu@quickbasket.com';
+          final email = userData?['email'] ??
+              FirebaseAuth.instance.currentUser?.email ??
+              'admin@quickbasket.com';
           final phone = userData?['phone'] ?? '+91 98765 43210';
 
           return SingleChildScrollView(
             child: Column(
               children: [
-                // ── Gradient Header with Avatar ──────────────────
                 _buildProfileHeader(context, avatarRadius, name),
-                // Spacing for the floating avatar + name
                 SizedBox(height: avatarRadius + 64),
 
-                // ── Admin Info Section ───────────────────────────
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: horizontalPad),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: horizontalPad),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -52,93 +54,109 @@ class AdminProfileScreen extends StatelessWidget {
                       const SizedBox(height: 12),
                       _infoCard([
                         _infoRow(
-                          Icons.person_outline, 
-                          'Full Name', 
+                          Icons.person_outline,
+                          'Full Name',
                           name,
-                          onEdit: () => _showEditDialog(context, 'Name', name, 'name'),
+                          onEdit: () => _showEditDialog(
+                              context, 'Name', name, 'name'),
                         ),
-                        _divider(),
-                        _infoRow(Icons.email_outlined, 'Email', email),
                         _divider(),
                         _infoRow(
-                          Icons.phone_outlined, 
-                          'Phone', 
+                            Icons.email_outlined, 'Email', email),
+                        _divider(),
+                        _infoRow(
+                          Icons.phone_outlined,
+                          'Phone',
                           phone,
-                          onEdit: () => _showEditDialog(context, 'Phone Number', phone, 'phone'),
+                          onEdit: () => _showEditDialog(context,
+                              'Phone Number', phone, 'phone'),
                         ),
                         _divider(),
-                        _infoRow(Icons.calendar_today_outlined, 'Joined', 'Jan 2025'),
+                        _infoRow(Icons.calendar_today_outlined,
+                            'Joined', 'Jan 2025'),
                       ]),
 
-                  const SizedBox(height: 24),
+                      const SizedBox(height: 24),
 
-                  // ── Admin Quick Actions ──────────────────────
-                  _sectionTitle('Management'),
-                  const SizedBox(height: 12),
-                  _infoCard([
-                    _menuTile(Icons.category_outlined, 'Manage Categories',
-                        onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) =>
-                                    const ManageCategoriesScreen()))),
-                    _divider(),
-                    _menuTile(Icons.inventory_2_outlined, 'Manage Products',
-                        onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) =>
-                                    const ManageProductsScreen()))),
-                    _divider(),
-                    _menuTile(Icons.delivery_dining_outlined,
-                        'Manage Delivery Persons',
-                        onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) =>
-                                    const ManageDeliveryPersonsScreen()))),
-                    _divider(),
-                    _menuTile(Icons.receipt_long_outlined, 'Manage Orders',
-                        onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) =>
-                                    const ManageOrdersScreen()))),
-                  ]),
+                      _sectionTitle('Management'),
+                      const SizedBox(height: 12),
+                      _infoCard([
+                        _menuTile(Icons.category_outlined,
+                            'Manage Categories',
+                            onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        const ManageCategoriesScreen()))),
+                        _divider(),
+                        _menuTile(Icons.inventory_2_outlined,
+                            'Manage Products',
+                            onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        const ManageProductsScreen()))),
+                        _divider(),
+                        _menuTile(Icons.delivery_dining_outlined,
+                            'Manage Delivery Persons',
+                            onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        const ManageDeliveryPersonsScreen()))),
+                        _divider(),
+                        _menuTile(Icons.receipt_long_outlined,
+                            'Manage Orders',
+                            onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        const ManageOrdersScreen()))),
+                      ]),
 
-                  const SizedBox(height: 28),
+                      const SizedBox(height: 28),
 
-                  // ── Logout Button ────────────────────────────
-                  SizedBox(
-                    width: double.infinity,
-                    child: UIHelper.customButton(
-                      
-                      text: 'Logout',
-                      backgroundColor: AppColors.primary,
-                      onPressed: () {
-                        // TODO: Firebase sign out
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) => const LoginScreen()),
-                        );
-                      },
-                    ),
+                      SizedBox(
+                        width: double.infinity,
+                        child: UIHelper.customButton(
+                          text: 'Logout',
+                          backgroundColor: AppColors.primary,
+                          onPressed: () async {
+                            try {
+                              await FirebaseAuth.instance.signOut();
+                              if (!context.mounted) return;
+                              UIHelper.showSnackBar(
+                                  context,
+                                  'Logged out successfully');
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        const LoginScreen()),
+                              );
+                            } catch (e) {
+                              if (!context.mounted) return;
+                              UIHelper.showSnackBar(
+                                  context, 'Logout failed: $e',
+                                  isError: true);
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                    ],
                   ),
-                  const SizedBox(height: 32),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-         ),
-        );
-      },
+          );
+        },
       ),
     );
   }
 
-  // ── Gradient Header ────────────────────────────────────────────────
-  Widget _buildProfileHeader(BuildContext context, double avatarRadius, String adminName) {
+  Widget _buildProfileHeader(
+      BuildContext context, double avatarRadius, String adminName) {
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -191,7 +209,8 @@ class AdminProfileScreen extends StatelessWidget {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
+                    color:
+                        AppColors.primary.withValues(alpha: 0.3),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),
@@ -219,10 +238,11 @@ class AdminProfileScreen extends StatelessWidget {
                       color: AppColors.textPrimary)),
               const SizedBox(height: 4),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
+                  color:
+                      AppColors.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Text('Administrator',
@@ -238,43 +258,55 @@ class AdminProfileScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _showEditDialog(BuildContext context, String title, String currentValue, String fieldKey) async {
+  Future<void> _showEditDialog(BuildContext context, String title,
+      String currentValue, String fieldKey) async {
     final ctrl = TextEditingController(text: currentValue);
     await showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Edit $title', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16)),
+        title: Text('Edit $title',
+            style: const TextStyle(
+                fontWeight: FontWeight.w600, fontSize: 18)),
         content: TextField(
           controller: ctrl,
           decoration: InputDecoration(
             hintText: 'Enter new $title',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12)),
+            contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14, vertical: 12),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+            child: const Text('Cancel',
+                style: TextStyle(color: AppColors.textSecondary)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: () async {
               if (ctrl.text.trim().isNotEmpty) {
                 try {
-                  await FirestoreService.updateUserProfile({fieldKey: ctrl.text.trim()});
+                  await FirestoreService.updateUserProfile(
+                      {fieldKey: ctrl.text.trim()});
                   if (!ctx.mounted) return;
                   Navigator.pop(ctx);
-                  UIHelper.showSnackBar(context, '$title updated successfully');
+                  UIHelper.showSnackBar(
+                      context, '$title updated successfully');
                 } catch (e) {
                   if (!ctx.mounted) return;
                   Navigator.pop(ctx);
-                  UIHelper.showSnackBar(context, 'Failed to update $title', isError: true);
+                  UIHelper.showSnackBar(
+                      context, 'Failed to update $title',
+                      isError: true);
                 }
               } else {
                 Navigator.pop(ctx);
@@ -313,9 +345,11 @@ class AdminProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _infoRow(IconData icon, String label, String value, {VoidCallback? onEdit}) {
+  Widget _infoRow(IconData icon, String label, String value,
+      {VoidCallback? onEdit}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: [
           Container(
@@ -348,7 +382,8 @@ class AdminProfileScreen extends StatelessWidget {
           ),
           if (onEdit != null)
             IconButton(
-              icon: const Icon(Icons.edit_outlined, size: 20, color: AppColors.primary),
+              icon: const Icon(Icons.edit_outlined,
+                  size: 20, color: AppColors.primary),
               onPressed: onEdit,
               splashRadius: 20,
             ),
@@ -363,7 +398,8 @@ class AdminProfileScreen extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
             Container(

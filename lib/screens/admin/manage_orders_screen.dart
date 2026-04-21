@@ -4,7 +4,6 @@ import '../../constants/app_colors.dart';
 import '../../helpers/ui_helper.dart';
 import '../../models/order_model.dart';
 
-/// Admin Manage Orders Screen
 class ManageOrdersScreen extends StatelessWidget {
   const ManageOrdersScreen({super.key});
 
@@ -93,7 +92,6 @@ class _AdminOrderCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header: ID and Status
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -114,7 +112,6 @@ class _AdminOrderCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            // Customer Details
             Row(
               children: [
                 const Icon(Icons.person_outline, size: 20, color: AppColors.textSecondary),
@@ -132,7 +129,6 @@ class _AdminOrderCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // Item Summary & Total
             Text('${order.items.length} items', style: const TextStyle(color: AppColors.textSecondary)),
             const SizedBox(height: 4),
             Text('Total: ₹${order.totalAmount.toStringAsFixed(2)}',
@@ -140,7 +136,6 @@ class _AdminOrderCard extends StatelessWidget {
             
             const Divider(height: 24),
 
-            // Actions
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [

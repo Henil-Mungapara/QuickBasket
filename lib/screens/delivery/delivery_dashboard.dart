@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:quickbasket/screens/delivery/delivery_profile_screen.dart';
 import '../../constants/app_colors.dart';
+import '../../helpers/ui_helper.dart';
 import '../../models/order_model.dart';
+import '../auth/login_screen.dart';
 
-
-/// Delivery Dashboard — assigned orders and completed count from Firestore.
 class DeliveryDashboard extends StatelessWidget {
   const DeliveryDashboard({super.key});
 
@@ -17,43 +19,64 @@ class DeliveryDashboard extends StatelessWidget {
         elevation: 0,
         title: const Text('Delivery Dashboard',
             style: TextStyle(
-                color: Colors.white, fontWeight: FontWeight.w600, fontSize: 20)),
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 20)),
         actions: [
           IconButton(
             icon: const Icon(Icons.person_outline, color: Colors.white),
-            onPressed: () =>
-                Navigator.pushNamed(context, '/delivery-profile'),
+            onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const DeliveryProfileScreen())),
           ),
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
-            onPressed: () =>
-                Navigator.pushReplacementNamed(context, '/login'),
+            onPressed: () async {
+              try {
+                await FirebaseAuth.instance.signOut();
+                if (!context.mounted) return;
+                UIHelper.showSnackBar(context, 'Logged out successfully');
+                Navigator.pushReplacement(context,
+                    MaterialPageRoute(builder: (_) => const LoginScreen()));
+              } catch (e) {
+                if (!context.mounted) return;
+                UIHelper.showSnackBar(context, 'Logout failed: $e',
+                    isError: true);
+              }
+            },
           ),
         ],
       ),
       body: StreamBuilder<QuerySnapshot>(
-        // FIXME: Once auth is linked to delivery person, filter by deliveryPersonId
         stream: FirebaseFirestore.instance
             .collection('orders')
-            .where('status', whereIn: ['Accepted', 'Out for Delivery', 'Delivered'])
+            .where('status',
+                whereIn: ['Accepted', 'Out for Delivery', 'Delivered'])
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+            return const Center(
+                child:
+                    CircularProgressIndicator(color: AppColors.primary));
           }
-          
+
           final docs = snapshot.data?.docs ?? [];
-          final allOrders = docs.map((doc) => OrderModel.fromJson(doc.id, doc.data() as Map<String, dynamic>)).toList();
-          
-          final assignedOrders = allOrders.where((o) => o.status != 'Delivered').toList();
-          final completedOrders = allOrders.where((o) => o.status == 'Delivered').toList();
+          final allOrders = docs
+              .map((doc) => OrderModel.fromJson(
+                  doc.id, doc.data() as Map<String, dynamic>))
+              .toList();
+
+          final assignedOrders =
+              allOrders.where((o) => o.status != 'Delivered').toList();
+          final completedOrders =
+              allOrders.where((o) => o.status == 'Delivered').toList();
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Welcome ─────────────────────────────────
                 const Text('Hello, Delivery Partner 👋',
                     style: TextStyle(
                         fontSize: 24,
@@ -61,22 +84,24 @@ class DeliveryDashboard extends StatelessWidget {
                         color: AppColors.textPrimary)),
                 const SizedBox(height: 4),
                 const Text('Here are your deliveries today',
-                    style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                    style: TextStyle(
+                        fontSize: 14, color: AppColors.textSecondary)),
                 const SizedBox(height: 24),
 
-                // ── Stats Row ───────────────────────────────
                 Row(
                   children: [
                     _statCard('Assigned', '${assignedOrders.length}',
                         Icons.assignment_outlined, AppColors.accepted),
                     const SizedBox(width: 14),
-                    _statCard('Completed', '${completedOrders.length}',
-                        Icons.check_circle_outline, AppColors.delivered),
+                    _statCard(
+                        'Completed',
+                        '${completedOrders.length}',
+                        Icons.check_circle_outline,
+                        AppColors.delivered),
                   ],
                 ),
                 const SizedBox(height: 28),
 
-                // ── Button to Assigned Orders ───────────────
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -86,8 +111,8 @@ class DeliveryDashboard extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                             color: AppColors.textPrimary)),
                     TextButton(
-                      onPressed: () =>
-                          Navigator.pushNamed(context, '/delivery-assigned-orders'),
+                      onPressed: () => Navigator.pushNamed(
+                          context, '/delivery-assigned-orders'),
                       child: const Text('View All',
                           style: TextStyle(color: AppColors.primary)),
                     ),
@@ -95,7 +120,6 @@ class DeliveryDashboard extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
 
-                // ── Recent Orders ───────────────────────────
                 if (assignedOrders.isEmpty)
                   Container(
                     width: double.infinity,
@@ -110,12 +134,15 @@ class DeliveryDashboard extends StatelessWidget {
                             size: 48, color: AppColors.divider),
                         SizedBox(height: 12),
                         Text('No assigned orders',
-                            style: TextStyle(color: AppColors.textSecondary)),
+                            style: TextStyle(
+                                color: AppColors.textSecondary)),
                       ],
                     ),
                   )
                 else
-                  ...assignedOrders.take(3).map((o) => _orderCard(context, o)),
+                  ...assignedOrders
+                      .take(3)
+                      .map((o) => _orderCard(context, o)),
               ],
             ),
           );
@@ -124,7 +151,8 @@ class DeliveryDashboard extends StatelessWidget {
     );
   }
 
-  Widget _statCard(String title, String value, IconData icon, Color color) {
+  Widget _statCard(
+      String title, String value, IconData icon, Color color) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(20),
@@ -188,10 +216,11 @@ class DeliveryDashboard extends StatelessWidget {
             children: [
               Text('#${o.id.substring(0, 8).toUpperCase()}',
                   style: const TextStyle(
-                      fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary)),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.accepted.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),

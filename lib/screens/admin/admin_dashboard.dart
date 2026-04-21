@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../constants/app_colors.dart';
+import '../../helpers/ui_helper.dart';
 import '../auth/login_screen.dart';
 import 'admin_profile_screen.dart';
 import 'manage_categories_screen.dart';
@@ -8,7 +10,6 @@ import 'manage_products_screen.dart';
 import 'manage_orders_screen.dart';
 import 'manage_delivery_persons_screen.dart';
 
-/// Admin Dashboard — overview cards and navigation to admin sub-screens.
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
 
@@ -32,14 +33,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Future<void> _fetchStats() async {
     try {
       final db = FirebaseFirestore.instance;
-      
-      // Fetch counts concurrently
+
       final usersFuture = db.collection('users').count().get();
       final ordersFuture = db.collection('orders').get();
       final productsFuture = db.collection('products').count().get();
 
-      final results = await Future.wait([usersFuture, ordersFuture, productsFuture]);
-      
+      final results =
+          await Future.wait([usersFuture, ordersFuture, productsFuture]);
+
       final usersSnap = results[0] as AggregateQuerySnapshot;
       final ordersSnap = results[1] as QuerySnapshot;
       final productsSnap = results[2] as AggregateQuerySnapshot;
@@ -74,7 +75,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Welcome Header ──────────────────────────────
             const Text('Welcome, Admin 👋',
                 style: TextStyle(
                     fontSize: 24,
@@ -82,17 +82,17 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     color: AppColors.textPrimary)),
             const SizedBox(height: 4),
             const Text('Here\'s your store overview',
-                style:
-                    TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                style: TextStyle(
+                    fontSize: 14, color: AppColors.textSecondary)),
             const SizedBox(height: 24),
 
-            // ── Stats Cards ─────────────────────────────────
-            _isLoadingStats 
-                ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+            _isLoadingStats
+                ? const Center(
+                    child: CircularProgressIndicator(
+                        color: AppColors.primary))
                 : _buildStatsGrid(context),
             const SizedBox(height: 28),
 
-            // ── Quick Actions ───────────────────────────────
             const Text('Quick Actions',
                 style: TextStyle(
                     fontSize: 18,
@@ -117,18 +117,33 @@ class _AdminDashboardState extends State<AdminDashboard> {
               fontSize: 20)),
       actions: [
         IconButton(
-          icon: const Icon(Icons.person_outline, color: Colors.white),
+          icon:
+              const Icon(Icons.person_outline, color: Colors.white),
           onPressed: () => Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const AdminProfileScreen()),
+            MaterialPageRoute(
+                builder: (_) => const AdminProfileScreen()),
           ),
         ),
         IconButton(
           icon: const Icon(Icons.logout, color: Colors.white),
-          onPressed: () => Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const LoginScreen()),
-          ),
+          onPressed: () async {
+            try {
+              await FirebaseAuth.instance.signOut();
+              if (!context.mounted) return;
+              UIHelper.showSnackBar(
+                  context, 'Logged out successfully');
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const LoginScreen()),
+              );
+            } catch (e) {
+              if (!context.mounted) return;
+              UIHelper.showSnackBar(context, 'Logout failed: $e',
+                  isError: true);
+            }
+          },
         ),
       ],
     );
@@ -136,8 +151,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   Widget _buildStatsGrid(BuildContext context) {
     String formatRevenue(double revenue) {
-      if (revenue >= 100000) return '₹${(revenue / 100000).toStringAsFixed(1)}L';
-      if (revenue >= 1000) return '₹${(revenue / 1000).toStringAsFixed(1)}K';
+      if (revenue >= 100000) {
+        return '₹${(revenue / 100000).toStringAsFixed(1)}L';
+      }
+      if (revenue >= 1000) {
+        return '₹${(revenue / 1000).toStringAsFixed(1)}K';
+      }
       return '₹${revenue.toStringAsFixed(0)}';
     }
 
@@ -192,8 +211,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Widget _buildStatCard(Map<String, dynamic> data) {
     return Card(
       elevation: 3,
-      shadowColor: (data['color'] as Color).withValues(alpha: 0.2),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shadowColor:
+          (data['color'] as Color).withValues(alpha: 0.2),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -203,11 +224,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: (data['color'] as Color).withValues(alpha: 0.12),
+                color: (data['color'] as Color)
+                    .withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child:
-                  Icon(data['icon'] as IconData, color: data['color'] as Color, size: 24),
+              child: Icon(data['icon'] as IconData,
+                  color: data['color'] as Color, size: 24),
             ),
             const SizedBox(height: 16),
             FittedBox(
@@ -233,10 +255,30 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   Widget _buildQuickActions(BuildContext context) {
     final actions = [
-      {'title': 'Manage Categories', 'subtitle': 'Add, edit or delete project categories', 'icon': Icons.category_rounded, 'screen': const ManageCategoriesScreen()},
-      {'title': 'Manage Products', 'subtitle': 'Control inventory and updating pricing', 'icon': Icons.inventory_2_rounded, 'screen': const ManageProductsScreen()},
-      {'title': 'Manage Orders', 'subtitle': 'View and process new customer orders', 'icon': Icons.receipt_long_rounded, 'screen': const ManageOrdersScreen()},
-      {'title': 'Delivery Personnel', 'subtitle': 'Assign and track your delivery agents', 'icon': Icons.delivery_dining_rounded, 'screen': const ManageDeliveryPersonsScreen()},
+      {
+        'title': 'Manage Categories',
+        'subtitle': 'Add, edit or delete project categories',
+        'icon': Icons.category_rounded,
+        'screen': const ManageCategoriesScreen()
+      },
+      {
+        'title': 'Manage Products',
+        'subtitle': 'Control inventory and updating pricing',
+        'icon': Icons.inventory_2_rounded,
+        'screen': const ManageProductsScreen()
+      },
+      {
+        'title': 'Manage Orders',
+        'subtitle': 'View and process new customer orders',
+        'icon': Icons.receipt_long_rounded,
+        'screen': const ManageOrdersScreen()
+      },
+      {
+        'title': 'Delivery Personnel',
+        'subtitle': 'Assign and track your delivery agents',
+        'icon': Icons.delivery_dining_rounded,
+        'screen': const ManageDeliveryPersonsScreen()
+      },
     ];
 
     return ListView.separated(
@@ -249,27 +291,39 @@ class _AdminDashboardState extends State<AdminDashboard> {
         return Card(
           elevation: 2,
           shadowColor: AppColors.shadow,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14)),
           child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16, vertical: 8),
             leading: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(a['icon'] as IconData, color: AppColors.primary, size: 28),
+              child: Icon(a['icon'] as IconData,
+                  color: AppColors.primary, size: 28),
             ),
             title: Text(a['title'] as String,
-                style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary)),
             subtitle: Padding(
               padding: const EdgeInsets.only(top: 4.0),
-              child: Text(a['subtitle'] as String, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              child: Text(a['subtitle'] as String,
+                  style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary)),
             ),
-            trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AppColors.textSecondary),
+            trailing: const Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 16,
+                color: AppColors.textSecondary),
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => a['screen'] as Widget),
+              MaterialPageRoute(
+                  builder: (_) => a['screen'] as Widget),
             ),
           ),
         );

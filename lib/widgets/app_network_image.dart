@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 
-/// Reusable image widget supporting local assets, base64 strings, and network URLs.
 class AppNetworkImage extends StatelessWidget {
   final String imageUrl;
   final double? width;
@@ -66,7 +65,6 @@ class AppNetworkImage extends StatelessWidget {
         errorBuilder: (ctx, err, trace) => _buildError(),
       );
     } else {
-      // Local asset
       imageWidget = Image.asset(
         imageUrl,
         width: width,

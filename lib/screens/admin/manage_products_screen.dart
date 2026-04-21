@@ -9,7 +9,6 @@ import '../../models/product_model.dart';
 import '../../models/category_model.dart';
 import '../../widgets/app_network_image.dart';
 
-/// Manage Products Screen — list, add, edit, delete products (Firestore + base64 images).
 class ManageProductsScreen extends StatefulWidget {
   const ManageProductsScreen({super.key});
 
@@ -65,7 +64,6 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> {
         TextEditingController(text: product?.stock.toString() ?? '');
     final descCtrl = TextEditingController(text: product?.description ?? '');
 
-    // Ensure selectedCatId is valid
     String selectedCatId = product?.categoryId ?? '';
     if (selectedCatId.isEmpty ||
         !_categories.any((c) => c.id == selectedCatId)) {
@@ -124,7 +122,6 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // ── Image Placeholder ─────────────────────
                 Center(
                   child: GestureDetector(
                     onTap: isSaving
@@ -181,7 +178,6 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> {
                     prefixIcon: Icons.shopping_bag_outlined),
                 const SizedBox(height: 14),
 
-                // ── Category Dropdown ─────────────────────
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
@@ -258,7 +254,6 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> {
                       setModalState(() => isSaving = true);
 
                       try {
-                        // Store base64 image string directly in Firestore
                         final col = FirebaseFirestore.instance
                             .collection('products');
                         if (product == null) {

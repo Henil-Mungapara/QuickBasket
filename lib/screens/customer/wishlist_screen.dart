@@ -7,7 +7,6 @@ import '../../services/firestore_service.dart';
 import '../../widgets/app_network_image.dart';
 import 'product_details_screen.dart';
 
-/// Wishlist Screen — Firestore-backed with StreamBuilder.
 class WishlistScreen extends StatelessWidget {
   const WishlistScreen({super.key});
 
@@ -118,7 +117,6 @@ class WishlistScreen extends StatelessWidget {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Add to Cart
                       IconButton(
                         icon: Container(
                           padding: const EdgeInsets.all(6),
@@ -136,7 +134,6 @@ class WishlistScreen extends StatelessWidget {
                               context, '${p.name} added to cart 🛒');
                         },
                       ),
-                      // Remove from Wishlist
                       IconButton(
                         icon: Container(
                           padding: const EdgeInsets.all(6),

@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// Order model with Firestore serialization.
 class OrderModel {
   final String id;
   final String userId;
@@ -8,7 +7,7 @@ class OrderModel {
   final String customerAddress;
   final List<OrderItem> items;
   final double totalAmount;
-  final String status; // Pending | Accepted | Out for Delivery | Delivered
+  final String status;
   final String? deliveryPersonId;
   final String? deliveryPersonName;
   final DateTime createdAt;
@@ -26,7 +25,6 @@ class OrderModel {
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
 
-  /// Create from Firestore document.
   factory OrderModel.fromJson(String id, Map<String, dynamic> json) {
     final itemsList = (json['items'] as List<dynamic>?)
             ?.map((e) => OrderItem.fromJson(e as Map<String, dynamic>))
@@ -55,7 +53,6 @@ class OrderModel {
     );
   }
 
-  /// Convert to Firestore map.
   Map<String, dynamic> toJson() {
     return {
       'userId': userId,
@@ -88,9 +85,7 @@ class OrderItem {
 
   double get total => price * quantity;
 
-  /// Create from Firestore map.
   factory OrderItem.fromJson(Map<String, dynamic> json) {
-    // Note: CartItemModel saves product name as 'name'
     return OrderItem(
       productId: json['productId'] ?? '',
       productName: json['name'] ?? json['productName'] ?? '',
@@ -100,11 +95,10 @@ class OrderItem {
     );
   }
 
-  /// Convert to Firestore map.
   Map<String, dynamic> toJson() {
     return {
       'productId': productId,
-      'name': productName, // Match CartItemModel pattern
+      'name': productName,
       'quantity': quantity,
       'price': price,
       'imageUrl': imageUrl,

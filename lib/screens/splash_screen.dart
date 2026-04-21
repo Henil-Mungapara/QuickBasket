@@ -15,7 +15,8 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
@@ -38,7 +39,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     _controller.forward();
 
-    // Navigate after a delay
     Timer(const Duration(seconds: 3), _checkAuthAndNavigate);
   }
 
@@ -88,12 +88,14 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         } else if (role == 'delivery_person') {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const DeliveryDashboard()),
+            MaterialPageRoute(
+                builder: (_) => const DeliveryDashboard()),
           );
         } else {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const CustomerHomeScreen()),
+            MaterialPageRoute(
+                builder: (_) => const CustomerHomeScreen()),
           );
         }
       }
@@ -140,7 +142,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.4),
+                        color:
+                            AppColors.primary.withValues(alpha: 0.4),
                         blurRadius: 30,
                         offset: const Offset(0, 10),
                       ),
@@ -183,7 +186,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             FadeTransition(
               opacity: _fadeAnimation,
               child: const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(AppColors.primary),
                 strokeWidth: 3,
               ),
             ),

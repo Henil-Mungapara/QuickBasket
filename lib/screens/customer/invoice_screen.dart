@@ -3,14 +3,12 @@ import '../../constants/app_colors.dart';
 import '../../helpers/ui_helper.dart';
 import '../../models/order_model.dart';
 
-/// Invoice Screen — view, download, and print invoice.
 class InvoiceScreen extends StatelessWidget {
   final OrderModel order;
   const InvoiceScreen({super.key, required this.order});
 
   @override
   Widget build(BuildContext context) {
-    // Use dummy if no argument passed
     final o = order;
 
     return Scaffold(
@@ -42,7 +40,6 @@ class InvoiceScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Header ─────────────────────────────────
               Center(
                 child: Column(
                   children: [
@@ -71,7 +68,6 @@ class InvoiceScreen extends StatelessWidget {
               const Divider(),
               const SizedBox(height: 12),
 
-              // ── Order Info ─────────────────────────────
               _row('Order ID', o.id),
               _row('Customer', o.customerName),
               _row('Address', o.customerAddress),
@@ -80,14 +76,12 @@ class InvoiceScreen extends StatelessWidget {
               const Divider(),
               const SizedBox(height: 12),
 
-              // ── Items Table ────────────────────────────
               const Text('Items',
                   style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary)),
               const SizedBox(height: 10),
-              // Header
               const Row(
                 children: [
                   Expanded(
@@ -143,7 +137,6 @@ class InvoiceScreen extends StatelessWidget {
                   )),
               const Divider(height: 20),
 
-              // ── Total ──────────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -161,14 +154,12 @@ class InvoiceScreen extends StatelessWidget {
               ),
               const SizedBox(height: 28),
 
-              // ── Action Buttons ─────────────────────────
               Row(
                 children: [
                   Expanded(
                     child: UIHelper.customButton(
                       text: '📄 Download',
                       onPressed: () {
-                        // TODO: Integrate flutter pdf package to generate PDF invoice.
                         UIHelper.showSnackBar(context,
                             'PDF download will be available after integration');
                       },
@@ -180,7 +171,6 @@ class InvoiceScreen extends StatelessWidget {
                       text: '🖨️ Print',
                       backgroundColor: AppColors.secondary,
                       onPressed: () {
-                        // TODO: Integrate printing package for invoice printing.
                         UIHelper.showSnackBar(context,
                             'Printing will be available after integration');
                       },

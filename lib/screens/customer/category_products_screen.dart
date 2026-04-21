@@ -8,7 +8,6 @@ import '../../widgets/app_network_image.dart';
 import '../../helpers/ui_helper.dart';
 import 'product_details_screen.dart';
 
-/// Category Products Screen — products filtered by category from Firestore.
 class CategoryProductsScreen extends StatelessWidget {
   final CategoryModel category;
   const CategoryProductsScreen({super.key, required this.category});
@@ -129,7 +128,6 @@ class CategoryProductsScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Image — BoxFit.contain so nothing is cut off
                       Expanded(
                         flex: 5,
                         child: Container(
@@ -154,7 +152,6 @@ class CategoryProductsScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      // Info
                       Expanded(
                         flex: 3,
                         child: Padding(

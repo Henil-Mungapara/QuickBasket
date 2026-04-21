@@ -13,7 +13,6 @@ import 'customer_profile_screen.dart';
 import 'product_details_screen.dart';
 import 'wishlist_screen.dart';
 
-/// Customer Home Screen — persistent bottom navigation with 4 tabs.
 class CustomerHomeScreen extends StatefulWidget {
   const CustomerHomeScreen({super.key});
 
@@ -99,10 +98,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// HOME TAB — gradient header, search, categories, featured, all products.
-// All data fetched from Firestore using StreamBuilder.
-// ─────────────────────────────────────────────────────────────────────────────
 class _HomeContent extends StatefulWidget {
   const _HomeContent();
   @override
@@ -117,7 +112,6 @@ class _HomeContentState extends State<_HomeContent> {
   @override
   void initState() {
     super.initState();
-    // Cache categories for fast search mapping
     FirebaseFirestore.instance.collection('categories').get().then((snap) {
       final map = <String, String>{};
       for (var doc in snap.docs) {
@@ -127,7 +121,6 @@ class _HomeContentState extends State<_HomeContent> {
       if (mounted) setState(() => _categoryMap = map);
     });
 
-    // Listen to search bar changes
     _searchCtrl.addListener(() {
       setState(() {
         _searchQuery = _searchCtrl.text.trim().toLowerCase();
@@ -147,10 +140,8 @@ class _HomeContentState extends State<_HomeContent> {
       backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
-          // ── Gradient Header ────────────────────────────────
           SliverToBoxAdapter(child: _buildGradientHeader(context)),
 
-          // ── Search ─────────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 6),
@@ -159,19 +150,16 @@ class _HomeContentState extends State<_HomeContent> {
           ),
 
           if (_searchQuery.isEmpty) ...[
-            // ── Categories ─────────────────────────────────────
             SliverToBoxAdapter(
               child: _sectionHeader('Shop by Category', topPad: 20),
             ),
             SliverToBoxAdapter(child: _buildCategoryList()),
 
-            // ── Featured Products ──────────────────────────────
             SliverToBoxAdapter(
               child: _sectionHeader('Featured Products', topPad: 24),
             ),
             SliverToBoxAdapter(child: _buildFeaturedProducts()),
 
-            // ── All Products ───────────────────────────────────
             SliverToBoxAdapter(
               child: _sectionHeader('All Products', topPad: 24),
             ),
@@ -196,7 +184,6 @@ class _HomeContentState extends State<_HomeContent> {
     );
   }
 
-  // ── Gradient Header ──────────────────────────────────────────────────
   Widget _buildGradientHeader(BuildContext context) {
     return Container(
       padding: EdgeInsets.only(
@@ -246,7 +233,7 @@ class _HomeContentState extends State<_HomeContent> {
             children: [
               _headerIconButton(
                 Icons.notifications_none_rounded,
-                badgeCount: 2, // Dummy static badge
+                badgeCount: 2,
                 onTap: () {},
               ),
               const SizedBox(width: 4),
@@ -309,7 +296,6 @@ class _HomeContentState extends State<_HomeContent> {
     );
   }
 
-  // ── Search Bar ───────────────────────────────────────────────────────
   Widget _buildSearchBar() {
     return Container(
       decoration: BoxDecoration(
@@ -348,7 +334,6 @@ class _HomeContentState extends State<_HomeContent> {
     );
   }
 
-  // ── Section Title ────────────────────────────────────────────────────
   Widget _sectionHeader(String title, {double topPad = 16}) {
     return Padding(
       padding: EdgeInsets.only(left: 20, right: 20, top: topPad, bottom: 12),
@@ -370,8 +355,6 @@ class _HomeContentState extends State<_HomeContent> {
     );
   }
 
-  // ── Categories ───────────────────────────────────────────────────────
-  // Colorful circular cards with gradient background.
   static const _catGradients = [
     [Color(0xFFE8F8F5), Color(0xFFD1F2EB)],
     [Color(0xFFFDF2E9), Color(0xFFFAE5CD)],
@@ -471,7 +454,6 @@ class _HomeContentState extends State<_HomeContent> {
     );
   }
 
-  // ── Featured Products (first 6) ──────────────────────────────────────
   Widget _buildFeaturedProducts() {
     return SizedBox(
       height: 240,
@@ -515,7 +497,6 @@ class _HomeContentState extends State<_HomeContent> {
     );
   }
 
-  // ── All Products Grid ────────────────────────────────────────────────
   Widget _buildProductGrid() {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
@@ -587,11 +568,6 @@ class _HomeContentState extends State<_HomeContent> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// REUSABLE PRODUCT CARDS
-// ─────────────────────────────────────────────────────────────────────────────
-
-/// Featured horizontal card.
 class _FeaturedProductCard extends StatelessWidget {
   final ProductModel product;
   final VoidCallback onTap;
@@ -617,7 +593,6 @@ class _FeaturedProductCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image — uses Expanded to fill available height, no cutoff
             Expanded(
               flex: 3,
               child: Container(
@@ -639,7 +614,6 @@ class _FeaturedProductCard extends StatelessWidget {
                 ),
               ),
             ),
-            // Info
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
               child: Column(
@@ -710,7 +684,6 @@ class _FeaturedProductCard extends StatelessWidget {
   }
 }
 
-/// Grid product card — responsive, no image cutoff.
 class _ProductGridCard extends StatelessWidget {
   final ProductModel product;
   final VoidCallback onTap;
@@ -734,7 +707,6 @@ class _ProductGridCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Image container with contain fit ───────────────
             Expanded(
               flex: 5,
               child: Container(
@@ -759,7 +731,6 @@ class _ProductGridCard extends StatelessWidget {
                 ),
               ),
             ),
-            // ── Info ──────────────────────────────────────────
             Expanded(
               flex: 4,
               child: Padding(

@@ -62,11 +62,11 @@ class _RegistrationScreenState extends State<RegistrationScreen>
     setState(() => _isLoading = true);
 
     try {
-      UserCredential userCredential = await _auth
-          .createUserWithEmailAndPassword(
-            email: _emailController.text.trim(),
-            password: _passwordController.text.trim(),
-          );
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
 
       String uid = userCredential.user!.uid;
 
@@ -83,7 +83,8 @@ class _RegistrationScreenState extends State<RegistrationScreen>
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => CustomerHomeScreen()),
+        MaterialPageRoute(
+            builder: (context) => const CustomerHomeScreen()),
       );
     } on FirebaseAuthException catch (e) {
       String message = 'Something went wrong';
@@ -99,7 +100,9 @@ class _RegistrationScreenState extends State<RegistrationScreen>
       if (!mounted) return;
       UIHelper.showSnackBar(context, message, isError: true);
     } catch (e) {
-      if (mounted) UIHelper.showSnackBar(context, 'Error: $e', isError: true);
+      if (mounted) {
+        UIHelper.showSnackBar(context, 'Error: $e', isError: true);
+      }
     }
 
     if (mounted) setState(() => _isLoading = false);
@@ -152,8 +155,9 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                     controller: _nameController,
                     hintText: 'Full Name',
                     prefixIcon: Icons.person_outline,
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'Name is required' : null,
+                    validator: (v) => v == null || v.isEmpty
+                        ? 'Name is required'
+                        : null,
                   ),
                   const SizedBox(height: 16),
 
@@ -163,8 +167,12 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                     prefixIcon: Icons.email_outlined,
                     keyboardType: TextInputType.emailAddress,
                     validator: (v) {
-                      if (v == null || v.isEmpty) return 'Email is required';
-                      if (!v.contains('@')) return 'Enter a valid email';
+                      if (v == null || v.isEmpty) {
+                        return 'Email is required';
+                      }
+                      if (!v.contains('@')) {
+                        return 'Enter a valid email';
+                      }
                       return null;
                     },
                   ),
@@ -183,11 +191,13 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                         color: AppColors.textSecondary,
                         size: 22,
                       ),
-                      onPressed: () =>
-                          setState(() => _obscurePassword = !_obscurePassword),
+                      onPressed: () => setState(
+                          () => _obscurePassword = !_obscurePassword),
                     ),
                     validator: (v) {
-                      if (v == null || v.isEmpty) return 'Password is required';
+                      if (v == null || v.isEmpty) {
+                        return 'Password is required';
+                      }
                       if (v.length < 6) return 'Minimum 6 characters';
                       return null;
                     },
@@ -207,8 +217,8 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                         color: AppColors.textSecondary,
                         size: 22,
                       ),
-                      onPressed: () =>
-                          setState(() => _obscureConfirm = !_obscureConfirm),
+                      onPressed: () => setState(
+                          () => _obscureConfirm = !_obscureConfirm),
                     ),
                     validator: (v) {
                       if (v == null || v.isEmpty) {
@@ -223,7 +233,8 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                   const SizedBox(height: 28),
 
                   UIHelper.customButton(
-                    text: _isLoading ? 'Creating...' : 'Create Account',
+                    text:
+                        _isLoading ? 'Creating...' : 'Create Account',
                     onPressed: _isLoading ? null : _handleRegister,
                     width: AppSize.screenWidth(context),
                   ),
@@ -234,7 +245,8 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                     children: [
                       const Text(
                         'Already have an account?',
-                        style: TextStyle(color: AppColors.textSecondary),
+                        style: TextStyle(
+                            color: AppColors.textSecondary),
                       ),
                       UIHelper.customTextButton(
                         text: 'Login',

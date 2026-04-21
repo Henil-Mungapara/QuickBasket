@@ -5,7 +5,6 @@ import '../../models/order_model.dart';
 import '../../services/firestore_service.dart';
 import 'invoice_screen.dart';
 
-/// Customer Orders Screen — Firestore-backed with StreamBuilder.
 class CustomerOrdersScreen extends StatelessWidget {
   const CustomerOrdersScreen({super.key});
 
@@ -133,7 +132,6 @@ class CustomerOrdersScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Order ID & Status
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -174,7 +172,6 @@ class CustomerOrdersScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
 
-                      // Items
                       ...o.items.map((item) => Padding(
                             padding: const EdgeInsets.only(bottom: 3),
                             child: Text(
@@ -185,7 +182,6 @@ class CustomerOrdersScreen extends StatelessWidget {
                           )),
                       const Divider(height: 20),
 
-                      // Total & Arrow
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [

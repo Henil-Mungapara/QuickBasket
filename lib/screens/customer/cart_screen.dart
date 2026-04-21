@@ -8,7 +8,6 @@ import '../../services/firestore_service.dart';
 import '../../widgets/app_network_image.dart';
 import 'checkout_screen.dart';
 
-/// Cart Screen — Firestore-backed cart with real-time updates.
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
 
@@ -85,7 +84,6 @@ class CartScreen extends StatelessWidget {
             );
           }
 
-          // Parse cart items
           final cartItems = docs
               .map((doc) => CartItemModel.fromJson(
                   doc.id, doc.data() as Map<String, dynamic>))
@@ -155,7 +153,6 @@ class CartScreen extends StatelessWidget {
   }
 }
 
-/// Individual cart item tile with quantity controls.
 class _CartItemTile extends StatelessWidget {
   final CartItemModel item;
   const _CartItemTile({required this.item});
@@ -177,7 +174,6 @@ class _CartItemTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Image
           Container(
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.05),
@@ -193,7 +189,6 @@ class _CartItemTile extends StatelessWidget {
           ),
           const SizedBox(width: 14),
 
-          // Name & Price
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -215,7 +210,6 @@ class _CartItemTile extends StatelessWidget {
             ),
           ),
 
-          // Quantity Controls
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [

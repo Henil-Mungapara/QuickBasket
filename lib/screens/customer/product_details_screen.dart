@@ -6,7 +6,6 @@ import '../../models/product_model.dart';
 import '../../services/firestore_service.dart';
 import '../../widgets/app_network_image.dart';
 
-/// Product Details Screen — hero image, info, add-to-cart bottom bar.
 class ProductDetailsScreen extends StatefulWidget {
   final ProductModel product;
   const ProductDetailsScreen({super.key, required this.product});
@@ -46,7 +45,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       backgroundColor: Colors.white,
       body: CustomScrollView(
         slivers: [
-          // ── Hero Image ─────────────────────────────────────
           SliverAppBar(
             expandedHeight: AppSize.heightFraction(context, 0.38),
             pinned: true,
@@ -71,7 +69,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   ),
                   alignment: Alignment.center,
                   child: const Padding(
-                    padding: EdgeInsets.only(left: 6.0), // center the iOS back icon
+                    padding: EdgeInsets.only(left: 6.0),
                     child: Icon(Icons.arrow_back_ios_new_rounded,
                         color: AppColors.textPrimary, size: 18),
                   ),
@@ -123,7 +121,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             ),
           ),
 
-          // ── Details ────────────────────────────────────────
           SliverToBoxAdapter(
             child: Container(
               decoration: const BoxDecoration(
@@ -135,7 +132,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Name & Price
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -168,7 +164,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   ),
                   const SizedBox(height: 10),
 
-                  // Stock Status
                   Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -207,7 +202,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Description
                   const Text('Description',
                       style: TextStyle(
                           fontSize: 17,
@@ -224,7 +218,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           height: 1.6)),
                   const SizedBox(height: 28),
 
-                  // Info Chips
                   Row(
                     children: [
                       _infoChip(Icons.local_shipping_outlined, 'Free Delivery',
@@ -245,7 +238,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         ],
       ),
 
-      // ── Bottom Bar ───────────────────────────────────────────
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(

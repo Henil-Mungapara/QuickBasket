@@ -9,7 +9,6 @@ import '../customer/customer_home_screen.dart';
 import '../delivery/delivery_dashboard.dart';
 import 'registration_screen.dart';
 
-/// Login Screen — authentication UI.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -56,14 +55,12 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() => _isLoading = true);
 
     try {
-      // 1. Authenticate with Firebase Auth
-      UserCredential userCred = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(
-            email: _emailController.text.trim(),
-            password: _passwordController.text.trim(),
-          );
+      UserCredential userCred =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
 
-      // 2. Fetch User Data from Firestore to check Role
       String uid = userCred.user!.uid;
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
           .collection('users')
@@ -72,14 +69,14 @@ class _LoginScreenState extends State<LoginScreen>
 
       if (!userDoc.exists) {
         if (mounted) {
-          UIHelper.showSnackBar(context, 'User data not found.', isError: true);
+          UIHelper.showSnackBar(context, 'User data not found.',
+              isError: true);
         }
         await FirebaseAuth.instance.signOut();
         setState(() => _isLoading = false);
         return;
       }
 
-      // 3. Determine Role and Navigate
       String role = userDoc.get('role') ?? 'customer';
 
       if (mounted) {
@@ -93,13 +90,15 @@ class _LoginScreenState extends State<LoginScreen>
           UIHelper.showSnackBar(context, 'Welcome Delivery Partner!');
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const DeliveryDashboard()),
+            MaterialPageRoute(
+                builder: (_) => const DeliveryDashboard()),
           );
         } else {
           UIHelper.showSnackBar(context, 'Login Successful!');
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const CustomerHomeScreen()),
+            MaterialPageRoute(
+                builder: (_) => const CustomerHomeScreen()),
           );
         }
       }
@@ -125,7 +124,6 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   void _handleGoogleSignIn() {
-    // TODO: Implement Google Sign-In with firebase_auth & google_sign_in
     UIHelper.showSnackBar(context, 'Google Sign-In coming soon!');
   }
 
@@ -143,20 +141,23 @@ class _LoginScreenState extends State<LoginScreen>
                 key: _formKey,
                 child: Column(
                   children: [
-                    // ── Logo / Brand ───────────────────────────
                     Container(
                       width: 90,
                       height: 90,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [AppColors.primary, AppColors.secondary],
+                          colors: [
+                            AppColors.primary,
+                            AppColors.secondary
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.35),
+                            color: AppColors.primary
+                                .withValues(alpha: 0.35),
                             blurRadius: 20,
                             offset: const Offset(0, 8),
                           ),
@@ -188,21 +189,23 @@ class _LoginScreenState extends State<LoginScreen>
                     ),
                     const SizedBox(height: 40),
 
-                    // ── Email ──────────────────────────────────
                     UIHelper.customTextField(
                       controller: _emailController,
                       hintText: 'Email Address',
                       prefixIcon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
                       validator: (v) {
-                        if (v == null || v.isEmpty) return 'Email is required';
-                        if (!v.contains('@')) return 'Enter a valid email';
+                        if (v == null || v.isEmpty) {
+                          return 'Email is required';
+                        }
+                        if (!v.contains('@')) {
+                          return 'Enter a valid email';
+                        }
                         return null;
                       },
                     ),
                     const SizedBox(height: 16),
 
-                    // ── Password ───────────────────────────────
                     UIHelper.customTextField(
                       controller: _passwordController,
                       hintText: 'Password',
@@ -230,7 +233,6 @@ class _LoginScreenState extends State<LoginScreen>
                     ),
                     const SizedBox(height: 28),
 
-                    // ── Login Button ──────────────────────────
                     UIHelper.customButton(
                       text: _isLoading ? 'Logging in...' : 'Login',
                       onPressed: _isLoading ? null : _handleLogin,
@@ -238,7 +240,6 @@ class _LoginScreenState extends State<LoginScreen>
                     ),
                     const SizedBox(height: 16),
 
-                    // ── OR Divider ────────────────────────────
                     Row(
                       children: [
                         Expanded(
@@ -248,7 +249,8 @@ class _LoginScreenState extends State<LoginScreen>
                           ),
                         ),
                         const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 16),
                           child: Text(
                             'OR',
                             style: TextStyle(
@@ -268,7 +270,6 @@ class _LoginScreenState extends State<LoginScreen>
                     ),
                     const SizedBox(height: 16),
 
-                    // ── Sign in with Google ───────────────────
                     SizedBox(
                       width: AppSize.screenWidth(context),
                       height: 52,
@@ -290,17 +291,16 @@ class _LoginScreenState extends State<LoginScreen>
                                 fontSize: 22,
                                 fontWeight: FontWeight.w700,
                                 foreground: Paint()
-                                  ..shader =
-                                      const LinearGradient(
-                                        colors: [
-                                          Color(0xFF4285F4),
-                                          Color(0xFFDB4437),
-                                          Color(0xFFF4B400),
-                                          Color(0xFF0F9D58),
-                                        ],
-                                      ).createShader(
-                                        const Rect.fromLTWH(0, 0, 24, 24),
-                                      ),
+                                  ..shader = const LinearGradient(
+                                    colors: [
+                                      Color(0xFF4285F4),
+                                      Color(0xFFDB4437),
+                                      Color(0xFFF4B400),
+                                      Color(0xFF0F9D58),
+                                    ],
+                                  ).createShader(
+                                    const Rect.fromLTWH(0, 0, 24, 24),
+                                  ),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -318,20 +318,21 @@ class _LoginScreenState extends State<LoginScreen>
                     ),
                     const SizedBox(height: 20),
 
-                    // ── Register Link ─────────────────────────
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text(
                           "Don't have an account?",
-                          style: TextStyle(color: AppColors.textSecondary),
+                          style: TextStyle(
+                              color: AppColors.textSecondary),
                         ),
                         UIHelper.customTextButton(
                           text: 'Register',
                           onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const RegistrationScreen(),
+                              builder: (_) =>
+                                  const RegistrationScreen(),
                             ),
                           ),
                         ),

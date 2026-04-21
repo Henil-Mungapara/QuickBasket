@@ -7,7 +7,6 @@ import '../../models/cart_item_model.dart';
 import '../../services/firestore_service.dart';
 import 'customer_home_screen.dart';
 
-/// Checkout Screen — order summary and place order from Firestore cart.
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
 
@@ -16,7 +15,7 @@ class CheckoutScreen extends StatefulWidget {
 }
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
-  final _customerNameCtrl = TextEditingController(text: 'Customer Name'); // In a real app, populate from profile
+  final _customerNameCtrl = TextEditingController(text: 'Customer Name');
   final _addressCtrl = TextEditingController(text: '123 Main St, City, State 560001');
 
   bool _isProcessing = false;
@@ -88,7 +87,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Delivery Address ─────────────────────────
                 _sectionCard(
                   icon: Icons.location_on_outlined,
                   title: 'Delivery Address',
@@ -117,7 +115,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // ── Order Summary ────────────────────────────
                 _sectionCard(
                   icon: Icons.receipt_long,
                   title: 'Order Summary',
@@ -154,7 +151,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // ── Payment Method ───────────────────────────
                 _sectionCard(
                   icon: Icons.payment,
                   title: 'Payment Method',
@@ -189,7 +185,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
                 const SizedBox(height: 28),
 
-                // ── Place Order ──────────────────────────────
                 _isProcessing
                     ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
                     : UIHelper.customButton(

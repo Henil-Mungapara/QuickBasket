@@ -1,4 +1,3 @@
-/// Cart item model — wraps a product with quantity.
 class CartItemModel {
   final String productId;
   final String productName;
@@ -40,7 +39,6 @@ class CartItemModel {
     );
   }
 
-  /// Convert to Firestore map.
   Map<String, dynamic> toJson() {
     return {
       'productId': productId,

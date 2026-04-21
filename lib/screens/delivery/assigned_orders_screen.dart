@@ -4,7 +4,6 @@ import '../../helpers/ui_helper.dart';
 import '../../models/order_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// Assigned Orders Screen for Delivery Personnel
 class AssignedOrdersScreen extends StatelessWidget {
   const AssignedOrdersScreen({super.key});
 
@@ -18,21 +17,22 @@ class AssignedOrdersScreen extends StatelessWidget {
         foregroundColor: Colors.white,
       ),
       body: StreamBuilder<QuerySnapshot>(
-        // For now, fetching all accepted/out-for-delivery orders.
-        // Once full delivery assignment logic is built, filter by deliveryPersonId.
         stream: FirebaseFirestore.instance
             .collection('orders')
             .where('status', whereIn: ['Accepted', 'Out for Delivery'])
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+            return const Center(
+                child:
+                    CircularProgressIndicator(color: AppColors.primary));
           }
           final docs = snapshot.data?.docs ?? [];
           if (docs.isEmpty) {
             return const Center(
               child: Text('No orders assigned to you currently.',
-                  style: TextStyle(fontSize: 16, color: AppColors.textSecondary)),
+                  style: TextStyle(
+                      fontSize: 16, color: AppColors.textSecondary)),
             );
           }
 
@@ -40,7 +40,8 @@ class AssignedOrdersScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             itemCount: docs.length,
             itemBuilder: (context, index) {
-              final data = docs[index].data() as Map<String, dynamic>;
+              final data =
+                  docs[index].data() as Map<String, dynamic>;
               final order = OrderModel.fromJson(docs[index].id, data);
               return _DeliveryOrderCard(order: order);
             },
@@ -55,7 +56,8 @@ class _DeliveryOrderCard extends StatelessWidget {
   final OrderModel order;
   const _DeliveryOrderCard({required this.order});
 
-  Future<void> _updateStatus(BuildContext context, String newStatus) async {
+  Future<void> _updateStatus(
+      BuildContext context, String newStatus) async {
     try {
       await FirebaseFirestore.instance
           .collection('orders')
@@ -65,7 +67,8 @@ class _DeliveryOrderCard extends StatelessWidget {
       UIHelper.showSnackBar(context, 'Order marked as $newStatus');
     } catch (e) {
       if (!context.mounted) return;
-      UIHelper.showSnackBar(context, 'Failed to update status', isError: true);
+      UIHelper.showSnackBar(context, 'Failed to update status',
+          isError: true);
     }
   }
 
@@ -73,7 +76,8 @@ class _DeliveryOrderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16)),
       elevation: 3,
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -83,16 +87,22 @@ class _DeliveryOrderCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Order #${order.id.substring(0, 8).toUpperCase()}',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(
+                    'Order #${order.id.substring(0, 8).toUpperCase()}',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16)),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(order.status,
-                      style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12)),
+                      style: const TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12)),
                 ),
               ],
             ),
@@ -100,15 +110,20 @@ class _DeliveryOrderCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.location_on, color: AppColors.accent, size: 20),
+                const Icon(Icons.location_on,
+                    color: AppColors.accent, size: 20),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(order.customerName, style: const TextStyle(fontWeight: FontWeight.w600)),
+                      Text(order.customerName,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w600)),
                       const SizedBox(height: 4),
-                      Text(order.customerAddress, style: const TextStyle(color: AppColors.textSecondary)),
+                      Text(order.customerAddress,
+                          style: const TextStyle(
+                              color: AppColors.textSecondary)),
                     ],
                   ),
                 ),
@@ -126,14 +141,16 @@ class _DeliveryOrderCard extends StatelessWidget {
                   UIHelper.customButton(
                     text: 'Start Delivery',
                     width: 140,
-                    onPressed: () => _updateStatus(context, 'Out for Delivery'),
+                    onPressed: () =>
+                        _updateStatus(context, 'Out for Delivery'),
                   )
                 else if (order.status == 'Out for Delivery')
                   UIHelper.customButton(
                     text: 'Mark Delivered',
                     width: 150,
                     backgroundColor: AppColors.success,
-                    onPressed: () => _updateStatus(context, 'Delivered'),
+                    onPressed: () =>
+                        _updateStatus(context, 'Delivered'),
                   ),
               ],
             ),
