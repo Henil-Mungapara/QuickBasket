@@ -1,7 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:quickbasket/firebase_options.dart';
-import 'package:quickbasket/screens/delivery/delivery_dashboard.dart';
 import 'package:quickbasket/screens/splash_screen.dart';
 import 'constants/app_colors.dart';
 
@@ -37,7 +36,7 @@ class QuickBasketApp extends StatelessWidget {
           elevation: 0,
         ),
       ),
-      home: const DeliveryDashboard(),
+      home: const SplashScreen(),
     );
   }
 }

@@ -9,6 +9,7 @@ import 'manage_categories_screen.dart';
 import 'manage_products_screen.dart';
 import 'manage_orders_screen.dart';
 import 'manage_delivery_persons_screen.dart';
+import 'manage_users_screen.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -272,6 +273,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
         'subtitle': 'View and process new customer orders',
         'icon': Icons.receipt_long_rounded,
         'screen': const ManageOrdersScreen()
+      },
+      {
+        'title': 'Manage Users',
+        'subtitle': 'View and manage all customer accounts',
+        'icon': Icons.people_alt_rounded,
+        'screen': const ManageUsersScreen()
       },
       {
         'title': 'Delivery Personnel',
